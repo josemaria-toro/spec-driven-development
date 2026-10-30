@@ -1,0 +1,21 @@
+# << project.name | md_escape >>
+
+<< project.description | md_escape >>
+
+Repository: `<< project.repository | md_escape >>`
+
+## Layout
+
+```
+AGENTS.md      # entry point to the harness (read this first)
+harness/       # guides, stacks and decisions: how we work here
+openspec/      # specifications and change proposals
+apps/          # the applications of this monorepo
+<% for application in applications %>
+  << application.kind | md_escape >>/   # << application.technology | md_escape >>
+<% endfor %>
+```
+
+## How we work
+
+Everything about how to work in this repository, including the spec-driven flow with OpenSpec, is defined in the harness. Start with [`AGENTS.md`](AGENTS.md).

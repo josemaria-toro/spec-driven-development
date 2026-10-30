@@ -1,0 +1,12 @@
+version: 2
+updates:
+<% for application in applications %>
+  - package-ecosystem: << application.ecosystem | json_str >>
+    directory: << ("/" ~ application.directory) | json_str >>
+    schedule:
+      interval: "weekly"
+<% endfor %>
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

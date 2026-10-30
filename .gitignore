@@ -1,0 +1,102 @@
+# Generated for the declared stack: Python (uv) backend, React (TypeScript) frontend,
+# PostgreSQL / RabbitMQ in containers. Lockfiles (uv.lock, pnpm-lock.yaml) ARE committed.
+
+# --- Secrets and local configuration (never commit) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version.local
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.import_linter_cache/
+.hypothesis/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Security scanners
+.bandit/
+osv-scanner-results.*
+pip-audit-*.json
+
+# --- Node / React / TypeScript ---
+node_modules/
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npmrc.local
+*.tsbuildinfo
+.eslintcache
+.vite/
+.turbo/
+.cache/
+.parcel-cache/
+
+# Frontend build output
+apps/frontend/dist/
+apps/frontend/build/
+apps/frontend/coverage/
+
+# Frontend tests (Vitest, Playwright)
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# --- Local runtime data ---
+*.log
+logs/
+tmp/
+.tmp/
+*.sqlite3
+pgdata/
+rabbitmq-data/
+docker-compose.override.yml
+
+# --- Generator workspace (rendered trees and staging directories) ---
+staging/
+workspaces/
+
+# --- OpenSpec / Claude Code ---
+# Skills, commands and settings shared by the team are committed; local overrides are not.
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+
+# --- Editors and IDEs ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Operating systems ---
+.DS_Store
+Thumbs.db
+Desktop.ini

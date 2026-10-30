@@ -1,0 +1,67 @@
+schema: spec-driven
+
+context: |
+  Project: << project.name | yaml_block >>
+  Description: << project.description | yaml_block >>
+  Repository: << project.repository | yaml_block >>
+  The repository harness lives in `harness/` and is authoritative. Read `AGENTS.md` (repository root) first,
+  then the guide that applies to the task (see its "Which guide to read" table).
+  Precedence when documents conflict: guardrails and security > ADRs (`harness/adr/`) >
+  stack sheet (`harness/stacks/`) > language guide (`harness/guides/development-<language>.md`) > other guides.
+
+  Language: all artifacts, code, comments, commits and ADRs are written in English.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  Monorepo applications (one directory under `apps/` each):
+<% for application in applications %>
+  - << application.kind | yaml_block >>: << application.technology | yaml_block >> (stack sheet `harness/stacks/<< application.stack_sheet | yaml_block >>`)
+<% endfor %>
+  Architecture: hexagonal or clean architecture only (declared per application in its stack sheet); anything else needs an ADR.
+  Defaults: PostgreSQL (database), RabbitMQ (event broker), Uvicorn (Python ASGI server).
+  Tests: unit and integration are mandatory everywhere; e2e (Playwright) is mandatory only for the frontend.
+  Frontend: must be responsive and conform to WCAG 2.2 AA.
+  Minimum coverage 80%, vulnerability check (high/critical and any secret block the commit)
+  and the other guardrails in `harness/guides/guardrails.md` apply to every change.
+  Git: trunk-based; `main` is the only persistent branch. Temporary branches use the prefixes
+  `feature/`, `bug/`, `hotfix/`, `chore/`, `change/` followed by the change id.
+  Commit types match the branch prefixes (feature, bug, hotfix, change, chore).
+
+rules:
+  proposal:
+    - State whether the change is functional (observable behavior) and why OpenSpec applies; chores are out of OpenSpec scope
+    - Use a kebab-case, verb-led change id (for example add-order-export); it is reused as branch name suffix, commit scope and PR reference
+    - State what is out of scope
+    - Mention the affected project(s)/stack(s) and the declared architecture (hexagonal or clean)
+    - Flag any exception to a guide or guardrail and require an ADR with owner and expiry date
+    - Flag any security-sensitive area touched (authentication, authorization, personal data, cryptography, file uploads, dependencies) so the OWASP security checklist is completed in the PR
+  specs:
+    - Every requirement uses SHALL or MUST and has at least one scenario
+    - Write scenarios as Given/When/Then; every scenario must be testable with a unit, integration or (frontend only) e2e test
+    - Include negative scenarios for authorization and input validation when applicable
+    - Frontend requirements must cover responsive behavior and WCAG 2.2 AA accessibility
+    - Do not edit openspec/specs directly; express behavior only as deltas inside the change
+  design:
+    - Create only when there are architecture or technical trade-offs; otherwise omit it
+    - Respect the declared architecture and the dependency rule from harness/guides/architecture.md
+    - Link the related ADR for any decision that is costly to reverse; CQRS, event sourcing or microservices require an ADR
+    - Include a short threat model when a trust boundary changes (see harness/guides/security.md)
+    - Use PostgreSQL and RabbitMQ unless an ADR justifies another engine or broker
+  tasks:
+    - Break work into small, verifiable tasks
+    - Include test tasks for every required level (unit and integration; e2e for the frontend) and for every scenario
+    - Include a task to keep coverage at or above 80% and the vulnerability check clean, without bypassing the pre-commit hooks
+    - Include a manual keyboard and screen-reader check task for UI changes
+    - Include documentation and ADR updates when applicable
+    - Do not include tasks that bypass guardrails (no --no-verify, no lowered thresholds, no allowlisting without an ADR)
+
+operations:
+  apply:
+    guidance:
+      - Work on a branch named <prefix>/<change-id> and never push directly to main
+      - Do not implement a functional change without an approved proposal
+      - Keep the Definition of Done in harness/guides/development.md satisfied before marking tasks complete
+      - Run openspec validate <change-id> before requesting review
+  archive:
+    guidance:
+      - Archive only after the change is merged and its tasks are complete
+      - Summarize the archive outcome before finishing
