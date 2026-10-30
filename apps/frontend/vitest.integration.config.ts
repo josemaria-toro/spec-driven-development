@@ -1,0 +1,18 @@
+import { fileURLToPath } from 'node:url';
+
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
+
+// Standalone on purpose: merging with vite.config.ts would concatenate the `include` globs
+// and run the unit tests again.
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+  },
+  test: {
+    environment: 'jsdom',
+    include: ['tests/integration/**/*.test.{ts,tsx}'],
+    setupFiles: ['./tests/setup.ts'],
+  },
+});

@@ -91,6 +91,11 @@ Verification (required in CI):
 | Playwright (`@playwright/test`) | E2E test framework | Apache-2.0 |
 | @axe-core/playwright | Accessibility checks in e2e | MPL-2.0 |
 | ESLint, Prettier | Quality tooling | MIT |
+| Vite, @vitejs/plugin-react | Build tool and React plugin | MIT |
+| TypeScript, typescript-eslint | Language and type-aware lint | Apache-2.0 / MIT |
+| @vitest/coverage-v8, jsdom, @testing-library/jest-dom, @testing-library/user-event | Unit and integration test support | MIT |
+| eslint-plugin-jsx-a11y, eslint-plugin-react-hooks, eslint-plugin-boundaries | Accessibility, hooks and layer lint | MIT |
+| eslint-import-resolver-typescript | Lets the layer rule resolve `@/` aliases | ISC |
 | `pnpm audit` | Dependency vulnerability audit (pre-commit + CI) | built into pnpm |
 | eslint-plugin-security | SAST (lint, CI) | Apache-2.0 |
 | OSV-Scanner | Cross-check of vulnerability data with severity (optional) | Apache-2.0 |
@@ -104,6 +109,7 @@ Verification (required in CI):
 - Pin the local/CI version in `.nvmrc` (or `.node-version`) and in the CI `setup-node` step; CI runs on the minimum (20) and may add a matrix with newer versions.
 - Docker images and tooling use `node:20` or newer, never older.
 - Dependency updates must stay compatible with `engines`; Dependabot does not raise the minimum on its own.
+- Staying on Node 20 pins some tools to an older major (the latest `vitest`, `jsdom`, `@testing-library/jest-dom` and `@axe-core/playwright` require Node 22 or newer). The current pins and their reasons are listed in `apps/frontend/README.md`; with `engine-strict=true` an incompatible update fails the install instead of slipping in.
 - Node 20 is an exception to the supported-versions policy, recorded in `adr/0001-node-20-minimum-version-exception.md` (expires 2027-01-31). Raising the minimum is a stack change and requires an ADR (see `guides/tech-stack.md`).
 
 ## Specifics
