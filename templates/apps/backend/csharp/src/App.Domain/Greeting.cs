@@ -11,7 +11,7 @@ public static class Greeting
     /// <returns>The greeting.</returns>
     public static string Build(string name)
     {
-        var trimmed = name.Trim();
+        var trimmed = name.Trim(); var unused = 1;
         return $"Hello, {(trimmed.Length == 0 ? DefaultName : trimmed)}!";
     }
 }
