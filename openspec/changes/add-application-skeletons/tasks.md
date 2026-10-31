@@ -29,8 +29,8 @@
 ## 5. Generated skeletons pass their gates in CI
 
 - [x] 5.1 Add `apps/backend/tests/generated/test_generated_skeletons.py` (marker `generated`, registered in `pyproject.toml`) that renders `backend`, `frontend` and `fullstack` projects into a temp directory and runs the gates of each application, checks the lockfiles did not change and runs the dependency audits; skip with a reason when `uv` or `pnpm` is missing outside CI and fail when missing in CI; verify it passes locally for the backend part (no Playwright browsers needed)
-- [ ] 5.2 Add `.github/workflows/skeletons.yml` that runs it on pull requests touching `templates/apps/**`, `apps/backend/src/**` or the test, on pushes to `main` and weekly, with pinned action versions, read-only permissions and Node 20 plus Playwright browsers; verify the job passes on the pull request of this change
-- [ ] 5.3 Verify the job fails when a skeleton is broken on purpose (for example a lint error in a template file), by trying it on a temporary branch that is closed afterwards, and record the result in the pull request
+- [x] 5.2 Add `.github/workflows/skeletons.yml` that runs it on pull requests touching `templates/apps/**`, `apps/backend/src/**` or the test, on pushes to `main` and weekly, with pinned action versions, read-only permissions and Node 20 plus Playwright browsers; verify the job passes on the pull request of this change
+- [x] 5.3 Verify the job fails when a skeleton is broken on purpose (for example a lint error in a template file), by trying it on a temporary branch that is closed afterwards, and record the result in the pull request
 
 ## 6. Quality gates and documentation
 
@@ -38,7 +38,7 @@
 - [x] 6.2 Run `uv run pytest tests/unit --cov --cov-fail-under=80` and `uv run pytest tests/integration` and verify coverage stays at or above 80% and all tests pass
 - [x] 6.3 Document the generated applications in the README template of the harness (`templates/harness/README.md`) or the nearest document that describes the generated tree, including how to refresh the skeleton lockfiles, and verify the commands it names run as written
 - [x] 6.4 Run `openspec validate add-application-skeletons --strict` and verify it is valid
-- [ ] 6.5 Complete the OWASP checklist (vulnerable and outdated components, software and data integrity) in the pull request, and verify the vulnerability and secret checks of CI pass without bypassing them
+- [x] 6.5 Complete the OWASP checklist (vulnerable and outdated components, software and data integrity) in the pull request, and verify the vulnerability and secret checks of CI pass without bypassing them
 
 ## Workflow follow-up
 
