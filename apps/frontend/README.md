@@ -26,7 +26,8 @@ pnpm test:unit --coverage        # coverage thresholds at 80%
 pnpm test:integration
 pnpm exec playwright install chromium   # once
 pnpm e2e                         # builds the app and runs against `vite preview`
-pnpm dev
+pnpm dev                 # foreground dev server
+./app.sh start           # or in the background (PORT=5173 by default); ./app.sh stop
 pnpm audit                       # high and critical block (dev dependencies included)
 ```
 

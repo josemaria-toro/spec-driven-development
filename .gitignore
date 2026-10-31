@@ -69,6 +69,7 @@ playwright/.cache/
 
 # --- Local runtime data ---
 *.log
+.run/
 logs/
 tmp/
 .tmp/

@@ -27,6 +27,8 @@ uv run pytest tests/unit --cov
 uv run pytest tests/integration
 ```
 
+`./app.sh start|stop` exists for symmetry with the frontend, but the backend has no inbound adapter yet: `start` exits with an explanation and `stop` reports that nothing is running. Complete it when the adapter exists.
+
 ## Project spec
 
 `ProjectSpec.from_raw(data)` validates untrusted data and reports **every** invalid field at once (`ValidationFailedError.issues`, each with a field and a readable reason). An invalid `ProjectSpec` cannot be constructed.
