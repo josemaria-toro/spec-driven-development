@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from project_generator.application.render_project import RenderProject, RenderResult
-from project_generator.infrastructure.filesystem_template_source import FilesystemTemplateSource
-from project_generator.infrastructure.filesystem_tree_writer import FilesystemTreeWriter
-from project_generator.infrastructure.jinja_engine import JinjaTemplateEngine
+from sdd.application.render_project import RenderProject, RenderResult
+from sdd.infrastructure.filesystem_template_source import FilesystemTemplateSource
+from sdd.infrastructure.filesystem_tree_writer import FilesystemTreeWriter
+from sdd.infrastructure.jinja_engine import JinjaTemplateEngine
 from tests.unit.factories import raw_spec
 
 OWNER = "acme-platform"

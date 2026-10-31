@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from jinja2 import StrictUndefined, TemplateError
 from jinja2.sandbox import SandboxedEnvironment
 
-from project_generator.application.errors import TemplateRenderError
+from sdd.application.errors import TemplateRenderError
 
 _MARKDOWN_SPECIAL = re.compile(r"([\\`*_{}\[\]()<>#|~!&])")
 _MARKDOWN_LEADING = re.compile(r"^(?:([-+])|(\d+)([.)]))")

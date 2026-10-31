@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Protocol
 
-from project_generator.domain.rendered_tree import RenderedTree
+from sdd.domain.rendered_tree import RenderedTree
 
 
 class TemplateSource(Protocol):

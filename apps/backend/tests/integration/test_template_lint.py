@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from project_generator.domain.render_plan import TEMPLATE_SUFFIX
+from sdd.domain.render_plan import TEMPLATE_SUFFIX
 from tests.integration.conftest import TEMPLATES_ROOT
 
 pytestmark = pytest.mark.integration

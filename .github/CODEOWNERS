@@ -1,0 +1,10 @@
+# Code owners: their review is requested on every pull request.
+# Format: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# By default, the whole repository.
+*                       @josemaria-toro
+
+# Mandatory specifications and guides.
+/openspec/              @josemaria-toro
+/harness/               @josemaria-toro
+/AGENTS.md              @josemaria-toro

@@ -3,7 +3,7 @@
 import os
 from pathlib import Path, PurePosixPath
 
-from project_generator.application.errors import TemplateSourceError
+from sdd.application.errors import TemplateSourceError
 
 
 class FilesystemTemplateSource:

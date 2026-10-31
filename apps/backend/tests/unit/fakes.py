@@ -3,8 +3,8 @@
 from collections.abc import Mapping
 from pathlib import Path
 
-from project_generator.application.errors import TemplateRenderError
-from project_generator.domain.rendered_tree import RenderedTree
+from sdd.application.errors import TemplateRenderError
+from sdd.domain.rendered_tree import RenderedTree
 
 
 class FakeTemplateSource:

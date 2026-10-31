@@ -1,7 +1,7 @@
 """The values that templates may use."""
 
-from project_generator.domain.catalogue import TECHNOLOGY_ECOSYSTEMS, TECHNOLOGY_STACK_SHEETS
-from project_generator.domain.project_spec import Application, ProjectSpec
+from sdd.domain.catalogue import TECHNOLOGY_ECOSYSTEMS, TECHNOLOGY_STACK_SHEETS
+from sdd.domain.project_spec import Application, ProjectSpec
 
 
 def build_application_contexts(spec: ProjectSpec) -> dict[str, dict[str, object]]:

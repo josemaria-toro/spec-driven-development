@@ -1,13 +1,13 @@
 import pytest
 
-from project_generator.domain.catalogue import (
+from sdd.domain.catalogue import (
     ApplicationKind,
     Technology,
     Typology,
     applications_of,
 )
-from project_generator.domain.errors import ValidationFailedError
-from project_generator.domain.project_spec import Application, ProjectSpec
+from sdd.domain.errors import ValidationFailedError
+from sdd.domain.project_spec import Application, ProjectSpec
 from tests.unit.factories import raw_spec
 
 

@@ -1,6 +1,6 @@
-# Project generator: frontend
+# SDD Project Builder: frontend
 
-React (TypeScript) web application of the project generator (see `harness/stacks/frontend-react.md`). It currently holds the skeleton only: one page, the quality tooling and the test levels. The guided chat, the project list and the progress view are separate changes.
+React (TypeScript) web application of SDD Project Builder (see `harness/stacks/frontend-react.md`). It currently holds the skeleton only: one page, the quality tooling and the test levels. The guided chat, the project list and the progress view are separate changes.
 
 ## Layout
 

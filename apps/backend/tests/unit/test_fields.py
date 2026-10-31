@@ -1,6 +1,6 @@
 import pytest
 
-from project_generator.domain.fields import (
+from sdd.domain.fields import (
     validate_description,
     validate_project_name,
     validate_repository_name,

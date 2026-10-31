@@ -7,7 +7,7 @@ export function App() {
         Skip to main content
       </a>
       <header className="app-header">
-        <p className="app-name">Project generator</p>
+        <p className="app-name">SDD Project Builder</p>
       </header>
       <main id={MAIN_ID} tabIndex={-1}>
         <h1>Create a development project</h1>

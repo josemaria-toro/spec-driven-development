@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from project_generator.application.errors import TemplateSourceError
-from project_generator.infrastructure.filesystem_template_source import FilesystemTemplateSource
+from sdd.application.errors import TemplateSourceError
+from sdd.infrastructure.filesystem_template_source import FilesystemTemplateSource
 
 pytestmark = pytest.mark.integration
 
