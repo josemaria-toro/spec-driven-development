@@ -1,5 +1,7 @@
 """The HTTP interface of the application."""
 
+import os
+
 from collections.abc import Awaitable, Callable
 from typing import Annotated, cast
 
