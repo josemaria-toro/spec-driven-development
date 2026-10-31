@@ -2,6 +2,7 @@ import pytest
 
 from sdd.domain.catalogue import (
     ApplicationKind,
+    ProjectType,
     Technology,
     Typology,
     applications_of,
@@ -91,7 +92,9 @@ def test_unsupported_typology_is_rejected_and_supported_ones_are_listed() -> Non
 def test_supported_technologies_are_accepted() -> None:
     spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "csharp"}))
 
-    assert spec.applications == (Application(ApplicationKind.BACKEND, Technology.CSHARP),)
+    assert spec.applications == (
+        Application(ApplicationKind.BACKEND, Technology.CSHARP, ProjectType.API),
+    )
 
 
 def test_technology_of_the_wrong_kind_is_rejected() -> None:
@@ -207,7 +210,7 @@ def test_canonical_form_is_compact_sorted_and_versioned() -> None:
     canonical = ProjectSpec.from_raw(raw_spec()).canonical_form()
 
     assert canonical.startswith('{"agent":"claude","description":')
-    assert '"schema_version":1' in canonical
+    assert '"schema_version":2' in canonical
     assert " " not in canonical.replace("Order management platform", "").replace(
         "Orders Platform", ""
     )
@@ -218,3 +221,136 @@ def test_hash_is_a_sha256_hex_digest() -> None:
 
     assert len(digest) == 64
     int(digest, 16)
+
+
+def csharp_spec(**overrides: object) -> dict[str, object]:
+    return raw_spec(typology="backend", technologies={"backend": "csharp"}, **overrides)
+
+
+def backend_project_type(spec: ProjectSpec) -> ProjectType | None:
+    return spec.applications[0].project_type
+
+
+@pytest.mark.parametrize("project_type", ["api", "console", "library"])
+def test_each_supported_project_type_is_accepted(project_type: str) -> None:
+    spec = ProjectSpec.from_raw(csharp_spec(project_type=project_type))
+
+    assert backend_project_type(spec) is ProjectType(project_type)
+
+
+def test_omitted_project_type_defaults_to_api() -> None:
+    assert backend_project_type(ProjectSpec.from_raw(csharp_spec())) is ProjectType.API
+
+
+def test_unsupported_project_type_is_rejected_and_supported_ones_are_listed() -> None:
+    with pytest.raises(ValidationFailedError) as error:
+        ProjectSpec.from_raw(csharp_spec(project_type="worker"))
+
+    assert fields_with_issues(error) == ["project_type"]
+    assert "supported values: api, console, library" in error.value.issues[0].reason
+
+
+def test_project_type_must_be_text() -> None:
+    with pytest.raises(ValidationFailedError) as error:
+        ProjectSpec.from_raw(csharp_spec(project_type=3))
+
+    assert fields_with_issues(error) == ["project_type"]
+
+
+def test_technology_without_project_types_rejects_one() -> None:
+    with pytest.raises(ValidationFailedError) as error:
+        ProjectSpec.from_raw(
+            raw_spec(typology="backend", technologies={"backend": "python"}, project_type="library")
+        )
+
+    assert fields_with_issues(error) == ["project_type"]
+    assert "offers no project types" in error.value.issues[0].reason
+
+
+def test_technology_without_project_types_needs_none() -> None:
+    spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "python"}))
+
+    assert backend_project_type(spec) is None
+
+
+def test_project_type_without_a_backend_is_rejected() -> None:
+    with pytest.raises(ValidationFailedError) as error:
+        ProjectSpec.from_raw(
+            raw_spec(
+                typology="frontend",
+                technologies={"frontend": "react-typescript"},
+                project_type="api",
+            )
+        )
+
+    assert fields_with_issues(error) == ["project_type"]
+    assert "only to a backend application" in error.value.issues[0].reason
+
+
+def test_project_type_is_reported_with_the_other_errors() -> None:
+    with pytest.raises(ValidationFailedError) as error:
+        ProjectSpec.from_raw(csharp_spec(project_type="worker", repository_name="../x"))
+
+    assert set(fields_with_issues(error)) == {"project_type", "repository_name"}
+
+
+def test_project_type_is_available_to_the_other_applications_of_a_fullstack_spec() -> None:
+    spec = ProjectSpec.from_raw(
+        raw_spec(
+            technologies={"backend": "csharp", "frontend": "react-typescript"},
+            project_type="console",
+        )
+    )
+
+    assert [a.project_type for a in spec.applications] == [ProjectType.CONSOLE, None]
+
+
+def test_direct_construction_resolves_the_default_type() -> None:
+    spec = ProjectSpec(
+        agent=ProjectSpec.from_raw(raw_spec()).agent,
+        applications=(Application(ApplicationKind.BACKEND, Technology.CSHARP),),
+        description="",
+        project_name="Orders",
+        repository_name="orders",
+        typology=Typology.BACKEND,
+    )
+
+    assert backend_project_type(spec) is ProjectType.API
+
+
+def test_direct_construction_refuses_a_type_the_technology_does_not_offer() -> None:
+    with pytest.raises(ValidationFailedError):
+        ProjectSpec(
+            agent=ProjectSpec.from_raw(raw_spec()).agent,
+            applications=(
+                Application(ApplicationKind.BACKEND, Technology.PYTHON, ProjectType.API),
+            ),
+            description="",
+            project_name="Orders",
+            repository_name="orders",
+            typology=Typology.BACKEND,
+        )
+
+
+def test_different_project_types_give_different_hashes() -> None:
+    api = ProjectSpec.from_raw(csharp_spec(project_type="api"))
+    library = ProjectSpec.from_raw(csharp_spec(project_type="library"))
+
+    assert api.content_hash() != library.content_hash()
+
+
+def test_default_project_type_hashes_like_an_explicit_api() -> None:
+    omitted = ProjectSpec.from_raw(csharp_spec())
+    explicit = ProjectSpec.from_raw(csharp_spec(project_type="api"))
+
+    assert omitted.content_hash() == explicit.content_hash()
+
+
+def test_python_spec_has_no_project_type_in_its_canonical_form() -> None:
+    canonical = ProjectSpec.from_raw(raw_spec()).canonical_form()
+
+    assert "project_type" not in canonical
+
+
+def test_canonical_form_of_a_csharp_spec_holds_the_resolved_project_type() -> None:
+    assert '"project_type":"api"' in ProjectSpec.from_raw(csharp_spec()).canonical_form()

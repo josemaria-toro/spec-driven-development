@@ -34,7 +34,7 @@ BACKEND_PYTHON_FILES = {
     "apps/backend/uv.lock",
 }
 
-BACKEND_CSHARP_FILES = {
+BACKEND_CSHARP_LIBRARY_FILES = {
     "apps/backend/.editorconfig",
     "apps/backend/.gitignore",
     "apps/backend/App.slnx",
@@ -61,6 +61,32 @@ BACKEND_CSHARP_FILES = {
     "apps/backend/tests/App.UnitTests/GreetingTests.cs",
     "apps/backend/tests/App.UnitTests/packages.lock.json",
     "apps/backend/tests/Directory.Build.props",
+}
+BACKEND_CSHARP_CONSOLE_FILES = BACKEND_CSHARP_LIBRARY_FILES | {
+    "apps/backend/src/App.Console/App.Console.csproj",
+    "apps/backend/src/App.Console/Cli.cs",
+    "apps/backend/src/App.Console/Program.cs",
+    "apps/backend/src/App.Console/packages.lock.json",
+    "apps/backend/tests/App.IntegrationTests/ConsoleProcessTests.cs",
+    "apps/backend/tests/App.UnitTests/CliTests.cs",
+}
+BACKEND_CSHARP_API_FILES = BACKEND_CSHARP_LIBRARY_FILES | {
+    "apps/backend/src/App.Api/App.Api.csproj",
+    "apps/backend/src/App.Api/GreeterService.cs",
+    "apps/backend/src/App.Api/GreetingEndpoint.cs",
+    "apps/backend/src/App.Api/GreetingResponse.cs",
+    "apps/backend/src/App.Api/IGreeter.cs",
+    "apps/backend/src/App.Api/Program.cs",
+    "apps/backend/src/App.Api/SecurityHeadersMiddleware.cs",
+    "apps/backend/src/App.Api/packages.lock.json",
+    "apps/backend/tests/App.IntegrationTests/ApiTests.cs",
+    "apps/backend/tests/App.UnitTests/GreetingEndpointTests.cs",
+    "apps/backend/tests/App.UnitTests/SecurityHeadersMiddlewareTests.cs",
+}
+BACKEND_CSHARP_FILES = {
+    "api": BACKEND_CSHARP_API_FILES,
+    "console": BACKEND_CSHARP_CONSOLE_FILES,
+    "library": BACKEND_CSHARP_LIBRARY_FILES,
 }
 
 FRONTEND_REACT_FILES = {

@@ -102,13 +102,28 @@ def backend(fullstack: Path) -> Iterator[Path]:
     assert digest(lockfile) == before, "uv.lock changed while the gates ran"
 
 
+@pytest.fixture(scope="module", params=["api", "console", "library"])
+def csharp_project_type(request: pytest.FixtureRequest) -> str:
+    return str(request.param)
+
+
 @pytest.fixture(scope="module")
-def csharp_backend(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
+def csharp_backend(
+    tmp_path_factory: pytest.TempPathFactory, csharp_project_type: str
+) -> Iterator[Path]:
     require_dotnet_sdk()
-    target = tmp_path_factory.mktemp("generated") / "csharp"
+    target = tmp_path_factory.mktemp("generated") / f"csharp-{csharp_project_type}"
     RenderProject(
         JinjaTemplateEngine(), FilesystemTemplateSource(TEMPLATES_ROOT), FilesystemTreeWriter()
-    ).execute(raw_spec(typology="backend", technologies={"backend": "csharp"}), OWNER, target)
+    ).execute(
+        raw_spec(
+            typology="backend",
+            technologies={"backend": "csharp"},
+            project_type=csharp_project_type,
+        ),
+        OWNER,
+        target,
+    )
     directory = target / "apps/backend"
     lockfiles = sorted(directory.rglob("packages.lock.json"))
     before = [digest(lockfile) for lockfile in lockfiles]
@@ -237,10 +252,7 @@ def test_csharp_warning_fails_the_build(csharp_backend: Path) -> None:
 
 
 def test_csharp_coverage_below_the_threshold_fails(csharp_backend: Path) -> None:
-    tests = [
-        csharp_backend / "tests/App.UnitTests" / name
-        for name in ("GreetingTests.cs", "GreetUseCaseTests.cs")
-    ]
+    tests = sorted((csharp_backend / "tests/App.UnitTests").glob("*Tests.cs"))
     contents = [test.read_text() for test in tests]
     for test in tests:
         test.unlink()
@@ -262,6 +274,57 @@ def test_csharp_coverage_below_the_threshold_fails(csharp_backend: Path) -> None
 
     assert result.returncode != 0
     assert "below the specified 80" in result.stdout
+
+
+def test_csharp_library_can_be_packed(csharp_backend: Path, csharp_project_type: str) -> None:
+    if csharp_project_type != "library":
+        pytest.skip("only the library type is packed")
+    output = csharp_backend / "packages-out"
+
+    run(["dotnet", "pack", "--no-restore", "-c", "Release", "-o", str(output)], csharp_backend)
+
+    assert sorted(path.name for path in output.glob("*.nupkg"))
+
+
+def test_csharp_console_runs_with_valid_and_invalid_arguments(
+    csharp_backend: Path, csharp_project_type: str
+) -> None:
+    if csharp_project_type != "console":
+        pytest.skip("only the console type has an executable")
+    command = ["dotnet", "run", "--project", "src/App.Console", "--no-restore", "--"]
+
+    valid = run([*command, "Ada"], csharp_backend)
+    invalid = run([*command, "Ada", "Grace"], csharp_backend, check=False)
+
+    assert valid.stdout.strip() == "Hello, Ada!"
+    assert invalid.returncode == 2
+    assert invalid.stdout == ""
+    assert "Usage:" in invalid.stderr
+
+
+def test_csharp_domain_referencing_the_entry_project_fails_the_build(
+    csharp_backend: Path, csharp_project_type: str
+) -> None:
+    entry = {"api": "App.Api", "console": "App.Console"}.get(csharp_project_type)
+    if entry is None:
+        pytest.skip("the library type has no entry project")
+    project = csharp_backend / "src/App.Domain/App.Domain.csproj"
+    original = project.read_text()
+    project.write_text(
+        original.replace(
+            "</Project>",
+            "  <ItemGroup>\n"
+            f'    <ProjectReference Include="../{entry}/{entry}.csproj" />\n'
+            "  </ItemGroup>\n</Project>",
+        )
+    )
+    try:
+        result = run(["dotnet", "build", "--no-restore"], csharp_backend, check=False)
+    finally:
+        project.write_text(original)
+
+    assert result.returncode != 0
+    assert "circular" in (result.stdout + result.stderr).lower()
 
 
 @pytest.mark.parametrize(

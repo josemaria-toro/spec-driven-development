@@ -200,3 +200,85 @@ def test_a_deeper_folder_named_like_a_technology_is_not_a_technology_directory()
     result = destinations(ProjectSpec.from_raw(raw_spec()), templates)
 
     assert "apps/backend/docs/csharp/notes.md" in result
+
+
+def project_type_templates() -> dict[str, bytes]:
+    return standard_templates() | {
+        "apps/backend/csharp/shared.props": b"shared",
+        "apps/backend/csharp/api/Api.csproj": b"api",
+        "apps/backend/csharp/api/src/library/Notes.cs": b"deeper",
+        "apps/backend/csharp/console/Console.csproj": b"console",
+        "apps/backend/csharp/library/Library.csproj": b"library",
+        "apps/backend/python/pyproject.toml": b"python",
+        "apps/backend/python/library/notes.py": b"a folder named like a type",
+    }
+
+
+def csharp_spec(**overrides: object) -> ProjectSpec:
+    return ProjectSpec.from_raw(
+        raw_spec(typology="backend", technologies={"backend": "csharp"}, **overrides)
+    )
+
+
+@pytest.mark.parametrize(
+    ("project_type", "expected", "others"),
+    [
+        ("api", "Api.csproj", ["Console.csproj", "Library.csproj"]),
+        ("console", "Console.csproj", ["Api.csproj", "Library.csproj"]),
+        ("library", "Library.csproj", ["Api.csproj", "Console.csproj"]),
+    ],
+)
+def test_only_the_files_of_the_selected_project_type_are_planned(
+    project_type: str, expected: str, others: list[str]
+) -> None:
+    result = destinations(csharp_spec(project_type=project_type), project_type_templates())
+
+    assert f"apps/backend/{expected}" in result
+    assert not [name for name in others if f"apps/backend/{name}" in result]
+    assert not [d for d in result if d.split("/")[2:3] in (["api"], ["console"], ["library"])]
+
+
+def test_omitted_project_type_plans_the_api_files() -> None:
+    result = destinations(csharp_spec(), project_type_templates())
+
+    assert "apps/backend/Api.csproj" in result
+    assert "apps/backend/Library.csproj" not in result
+
+
+@pytest.mark.parametrize("project_type", ["api", "console", "library"])
+def test_files_shared_by_every_project_type_are_planned_for_each_one(project_type: str) -> None:
+    result = destinations(csharp_spec(project_type=project_type), project_type_templates())
+
+    assert "apps/backend/shared.props" in result
+
+
+def test_technology_without_project_types_keeps_folders_named_like_a_type() -> None:
+    spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "python"}))
+
+    result = destinations(spec, project_type_templates())
+
+    assert "apps/backend/library/notes.py" in result
+    assert "apps/backend/pyproject.toml" in result
+
+
+def test_deeper_folder_named_like_a_project_type_is_kept() -> None:
+    result = destinations(csharp_spec(project_type="api"), project_type_templates())
+
+    assert "apps/backend/src/library/Notes.cs" in result
+
+
+def test_shared_and_project_type_file_with_the_same_destination_are_refused() -> None:
+    templates = project_type_templates() | {"apps/backend/csharp/Api.csproj": b"shared"}
+
+    with pytest.raises(RenderPlanError, match="more than once"):
+        build_render_plan(csharp_spec(project_type="api"), templates.keys())
+
+
+def test_project_type_directory_of_a_kind_outside_the_typology_is_skipped() -> None:
+    templates = project_type_templates() | {
+        "apps/frontend/react-typescript/api/App.tsx": b"frontend",
+    }
+
+    result = destinations(csharp_spec(project_type="api"), templates)
+
+    assert not [d for d in result if d.startswith("apps/frontend/") and d.endswith("App.tsx")]

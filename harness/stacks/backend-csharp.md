@@ -43,6 +43,31 @@ Directory.Build.props
 Directory.Packages.props
 ```
 
+### Project types
+
+A C# backend is created with a project type (`project_type` in the project spec; `api` when omitted). The layers, the three test projects and the quality gates are the same for every type; the type decides the entry project:
+
+| Type | Entry project | Use |
+|---|---|---|
+| `api` | `<App>.Api` (ASP.NET Core, composition root) | HTTP service |
+| `console` | `<App>.Console` (composition root) | command line tool |
+| `library` | none | reusable library: the layer projects are packable (`dotnet pack`) and every public member is documented |
+
+```
+src/
+  <App>.Domain/ <App>.Application/ <App>.Infrastructure/
+  <App>.Api/            # api only
+  <App>.Console/        # console only
+tests/
+  <App>.UnitTests/ <App>.IntegrationTests/ <App>.ArchitectureTests/
+```
+
+```bash
+dotnet run --project src/<App>.Api         # api
+dotnet run --project src/<App>.Console     # console
+dotnet pack                                # library
+```
+
 ## Quality
 
 - Minimum coverage: 80%, gate before each commit and in CI: unit tests with the Coverlet threshold (`-p:CollectCoverage=true -p:Threshold=80 -p:ThresholdType=line`, via `coverlet.msbuild`).

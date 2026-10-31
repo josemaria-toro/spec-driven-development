@@ -4,13 +4,28 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 
-from sdd.domain.catalogue import AGENT_ENTRY_FILES, Technology
+from sdd.domain.catalogue import (
+    AGENT_ENTRY_FILES,
+    TECHNOLOGY_PROJECT_TYPES,
+    ProjectType,
+    Technology,
+)
 from sdd.domain.project_spec import ProjectSpec
 
 TEMPLATE_SUFFIX = ".tmpl"
 _RULESETS_PREFIX = "rulesets/"
 _ISSUES_PREFIX = "issues/"
 _TECHNOLOGY_NAMES = frozenset(technology.value for technology in Technology)
+_PROJECT_TYPE_NAMES = frozenset(project_type.value for project_type in ProjectType)
+_TYPED_TECHNOLOGIES = frozenset(technology.value for technology in TECHNOLOGY_PROJECT_TYPES)
+
+
+@dataclass(frozen=True)
+class _Selection:
+    """The technology and, when the technology offers them, the project type of one kind."""
+
+    technology: str
+    project_type: str | None
 
 
 class RenderMode(StrEnum):
@@ -36,7 +51,11 @@ class PlannedFile:
 def build_render_plan(spec: ProjectSpec, template_paths: Iterable[str]) -> tuple[PlannedFile, ...]:
     """Map the available templates to destinations for this spec, sorted by destination."""
     technologies = {
-        application.kind.value: application.technology.value for application in spec.applications
+        application.kind.value: _Selection(
+            application.technology.value,
+            application.project_type.value if application.project_type else None,
+        )
+        for application in spec.applications
     }
     planned: list[PlannedFile] = []
     for source in sorted(template_paths):
@@ -66,7 +85,7 @@ def _application_kind(source: str) -> str | None:
     return rest.partition("/")[0] if head == "apps" else None
 
 
-def _destination(source: str, agent: str, technologies: dict[str, str]) -> str | None:
+def _destination(source: str, agent: str, technologies: dict[str, _Selection]) -> str | None:
     head, _, rest = source.partition("/")
     if head == "harness":
         return "AGENTS.md" if rest == "AGENTS.md" else source
@@ -82,14 +101,20 @@ def _destination(source: str, agent: str, technologies: dict[str, str]) -> str |
     raise RenderPlanError(f"template '{source}' has no destination")
 
 
-def _application_destination(rest: str, technologies: dict[str, str]) -> str | None:
+def _application_destination(rest: str, selections: dict[str, _Selection]) -> str | None:
     kind, _, name = rest.partition("/")
-    if kind not in technologies or not name:
+    if kind not in selections or not name:
         return None
+    selection = selections[kind]
     technology, _, path = name.partition("/")
-    if path and technology in _TECHNOLOGY_NAMES:
-        return f"apps/{kind}/{path}" if technology == technologies[kind] else None
-    return f"apps/{kind}/{name}"
+    if not path or technology not in _TECHNOLOGY_NAMES:
+        return f"apps/{kind}/{name}"
+    if technology != selection.technology:
+        return None
+    project_type, _, files = path.partition("/")
+    if technology in _TYPED_TECHNOLOGIES and files and project_type in _PROJECT_TYPE_NAMES:
+        return f"apps/{kind}/{files}" if project_type == selection.project_type else None
+    return f"apps/{kind}/{path}"
 
 
 def _github_destination(rest: str) -> str | None:

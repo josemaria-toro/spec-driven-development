@@ -31,6 +31,7 @@ def _application_values(application: Application) -> dict[str, object]:
         "directory": application.directory,
         "ecosystem": TECHNOLOGY_ECOSYSTEMS[application.technology],
         "kind": application.kind.value,
+        "project_type": application.project_type.value if application.project_type else "",
         "stack_sheet": TECHNOLOGY_STACK_SHEETS[(application.kind, application.technology)],
         "technology": application.technology.value,
     }
