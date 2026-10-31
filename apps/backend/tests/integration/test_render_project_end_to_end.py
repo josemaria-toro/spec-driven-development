@@ -26,6 +26,7 @@ ROOT_FILES = {
     ".github/ISSUE_TEMPLATE/change.yml",
     ".github/ISSUE_TEMPLATE/feature.yml",
     ".github/dependabot.yml",
+    ".github/workflows/repository.yml",
     "AGENTS.md",
     "CLAUDE.md",
     "README.md",
