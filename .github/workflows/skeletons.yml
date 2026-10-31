@@ -53,6 +53,12 @@ jobs:
         with:
           node-version-file: templates/apps/frontend/react-typescript/.nvmrc
 
+      # The SDK version comes from the skeleton's global.json (10.0 LTS, feature roll-forward).
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: templates/apps/backend/csharp/global.json
+
       - name: Install dependencies
         run: uv sync --frozen
 

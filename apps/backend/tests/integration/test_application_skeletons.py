@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -5,11 +6,16 @@ from pathlib import Path
 import pytest
 
 from tests.integration.conftest import (
+    BACKEND_CSHARP_FILES,
     BACKEND_PYTHON_FILES,
     FRONTEND_REACT_FILES,
+    OWNER,
+    TEMPLATES_ROOT,
     Render,
+    build_use_case,
     read_tree,
 )
+from tests.unit.factories import raw_spec
 
 pytestmark = pytest.mark.integration
 
@@ -61,6 +67,21 @@ def test_react_frontend_gets_exactly_its_skeleton_files(
     assert application_files(tmp_path / "out", "frontend") == FRONTEND_REACT_FILES
 
 
+@pytest.mark.parametrize(
+    ("typology", "technologies"),
+    [
+        ("backend", {"backend": "csharp"}),
+        ("fullstack", {"backend": "csharp", "frontend": "react-typescript"}),
+    ],
+)
+def test_csharp_backend_gets_exactly_its_skeleton_files(
+    tmp_path: Path, render: Render, typology: str, technologies: dict[str, str]
+) -> None:
+    render(tmp_path / "out", typology=typology, technologies=technologies)
+
+    assert application_files(tmp_path / "out", "backend") == BACKEND_CSHARP_FILES
+
+
 def test_rendered_python_backend_passes_its_layer_rules(tmp_path: Path, render: Render) -> None:
     render(tmp_path / "out", typology="backend", technologies={"backend": "python"})
 
@@ -98,10 +119,15 @@ def skeleton_files(target: Path) -> dict[str, bytes]:
     }
 
 
-def test_different_projects_get_byte_identical_skeletons(tmp_path: Path, render: Render) -> None:
-    render(tmp_path / "first")
+@pytest.mark.parametrize("backend", ["python", "csharp"])
+def test_different_projects_get_byte_identical_skeletons(
+    tmp_path: Path, render: Render, backend: str
+) -> None:
+    technologies = {"backend": backend, "frontend": "react-typescript"}
+    render(tmp_path / "first", technologies=technologies)
     render(
         tmp_path / "second",
+        technologies=technologies,
         description="Something else entirely",
         project_name="Billing",
         repository_name="billing-service",
@@ -113,10 +139,14 @@ def test_different_projects_get_byte_identical_skeletons(tmp_path: Path, render:
     assert first == second
 
 
-def test_project_values_do_not_reach_any_skeleton_file(tmp_path: Path, render: Render) -> None:
+@pytest.mark.parametrize("backend", ["python", "csharp"])
+def test_project_values_do_not_reach_any_skeleton_file(
+    tmp_path: Path, render: Render, backend: str
+) -> None:
     values = ['{{ 7 * 7 }} "quoted"', "<< 7 * 7 >>", "Zebra Platform", "zebra-platform"]
     render(
         tmp_path / "out",
+        technologies={"backend": backend, "frontend": "react-typescript"},
         description=values[0] + values[1],
         project_name=values[2],
         repository_name=values[3],
@@ -127,18 +157,24 @@ def test_project_values_do_not_reach_any_skeleton_file(tmp_path: Path, render: R
         assert not [value for value in values if value in text], path
 
 
-def test_technology_without_a_skeleton_renders_only_the_kind_readme(
-    tmp_path: Path, render: Render
-) -> None:
-    render(tmp_path / "out", typology="backend", technologies={"backend": "csharp"})
+def test_technology_without_a_skeleton_renders_only_the_kind_readme(tmp_path: Path) -> None:
+    templates = tmp_path / "templates"
+    shutil.copytree(TEMPLATES_ROOT, templates)
+    shutil.rmtree(templates / "apps/backend/csharp")
+    target = tmp_path / "out"
 
-    assert application_files(tmp_path / "out", "backend") == {"apps/backend/README.md"}
+    build_use_case(templates).execute(
+        raw_spec(typology="backend", technologies={"backend": "csharp"}), OWNER, target
+    )
+
+    assert application_files(target, "backend") == {"apps/backend/README.md"}
 
 
 @pytest.mark.parametrize(
     ("typology", "technologies", "kinds"),
     [
         ("backend", {"backend": "python"}, ["backend"]),
+        ("backend", {"backend": "csharp"}, ["backend"]),
         ("frontend", {"frontend": "react-typescript"}, ["frontend"]),
         (
             "fullstack",

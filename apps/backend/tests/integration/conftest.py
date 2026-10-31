@@ -34,6 +34,35 @@ BACKEND_PYTHON_FILES = {
     "apps/backend/uv.lock",
 }
 
+BACKEND_CSHARP_FILES = {
+    "apps/backend/.editorconfig",
+    "apps/backend/.gitignore",
+    "apps/backend/App.slnx",
+    "apps/backend/Directory.Build.props",
+    "apps/backend/Directory.Packages.props",
+    "apps/backend/README.md",
+    "apps/backend/global.json",
+    "apps/backend/src/App.Application/App.Application.csproj",
+    "apps/backend/src/App.Application/GreetUseCase.cs",
+    "apps/backend/src/App.Application/packages.lock.json",
+    "apps/backend/src/App.Domain/App.Domain.csproj",
+    "apps/backend/src/App.Domain/Greeting.cs",
+    "apps/backend/src/App.Domain/packages.lock.json",
+    "apps/backend/src/App.Infrastructure/App.Infrastructure.csproj",
+    "apps/backend/src/App.Infrastructure/packages.lock.json",
+    "apps/backend/tests/App.ArchitectureTests/App.ArchitectureTests.csproj",
+    "apps/backend/tests/App.ArchitectureTests/LayerRulesTests.cs",
+    "apps/backend/tests/App.ArchitectureTests/packages.lock.json",
+    "apps/backend/tests/App.IntegrationTests/App.IntegrationTests.csproj",
+    "apps/backend/tests/App.IntegrationTests/GreetIntegrationTests.cs",
+    "apps/backend/tests/App.IntegrationTests/packages.lock.json",
+    "apps/backend/tests/App.UnitTests/App.UnitTests.csproj",
+    "apps/backend/tests/App.UnitTests/GreetUseCaseTests.cs",
+    "apps/backend/tests/App.UnitTests/GreetingTests.cs",
+    "apps/backend/tests/App.UnitTests/packages.lock.json",
+    "apps/backend/tests/Directory.Build.props",
+}
+
 FRONTEND_REACT_FILES = {
     "apps/frontend/.gitignore",
     "apps/frontend/.npmrc",

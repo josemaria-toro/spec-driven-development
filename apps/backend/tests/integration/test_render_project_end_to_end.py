@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from tests.integration.conftest import (
+    BACKEND_CSHARP_FILES,
     BACKEND_PYTHON_FILES,
     FRONTEND_REACT_FILES,
     OWNER,
@@ -60,7 +61,7 @@ def test_backend_only_project_has_only_the_backend_application(
     render(target, typology="backend", technologies={"backend": "csharp"})
 
     files = set(read_tree(target))
-    assert files == ROOT_FILES | HARNESS_FILES | {"apps/backend/README.md"}
+    assert files == ROOT_FILES | HARNESS_FILES | BACKEND_CSHARP_FILES
     assert "csharp" in (target / "apps/backend/README.md").read_text()
 
 
