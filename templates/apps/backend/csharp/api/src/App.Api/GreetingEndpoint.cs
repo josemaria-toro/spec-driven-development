@@ -7,7 +7,6 @@ namespace App.Api;
 /// <summary>The greeting endpoint: validates its input and answers with the greeting.</summary>
 public static class GreetingEndpoint
 {
-    /// <summary>The longest accepted name.</summary>
     public const int MaxNameLength = 100;
 
     /// <summary>The route of the endpoint.</summary>
