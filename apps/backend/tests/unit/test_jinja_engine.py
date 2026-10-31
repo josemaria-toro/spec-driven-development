@@ -3,8 +3,8 @@ import json
 import pytest
 import yaml
 
-from project_generator.application.errors import TemplateRenderError
-from project_generator.infrastructure.jinja_engine import JinjaTemplateEngine, md_escape
+from sdd.application.errors import TemplateRenderError
+from sdd.infrastructure.jinja_engine import JinjaTemplateEngine, md_escape
 
 
 def render(template: str, **context: object) -> str:

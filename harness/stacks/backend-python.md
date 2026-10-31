@@ -64,7 +64,7 @@ uv.lock
 | asyncpg | PostgreSQL driver | Apache-2.0 |
 | aio-pika | RabbitMQ client | Apache-2.0 |
 | httpx | HTTP client | BSD-3-Clause |
-| Jinja2 | Template rendering (sandboxed, project generator) | BSD-3-Clause |
+| Jinja2 | Template rendering (sandboxed, SDD Project Builder) | BSD-3-Clause |
 | structlog | Structured logging | MIT / Apache-2.0 |
 | pytest | Test framework (unit + integration) | MIT |
 | pytest-cov | Coverage | MIT |

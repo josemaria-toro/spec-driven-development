@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from project_generator.application.errors import TargetNotEmptyError, UnsafePathError
-from project_generator.domain.rendered_tree import RenderedFile, RenderedTree
-from project_generator.infrastructure.filesystem_tree_writer import FilesystemTreeWriter
+from sdd.application.errors import TargetNotEmptyError, UnsafePathError
+from sdd.domain.rendered_tree import RenderedFile, RenderedTree
+from sdd.infrastructure.filesystem_tree_writer import FilesystemTreeWriter
 
 pytestmark = pytest.mark.integration
 

@@ -5,15 +5,15 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from project_generator.application.ports import TemplateEngine, TemplateSource, TreeWriter
-from project_generator.domain.owner import ensure_owner
-from project_generator.domain.project_spec import ProjectSpec
-from project_generator.domain.render_context import (
+from sdd.application.ports import TemplateEngine, TemplateSource, TreeWriter
+from sdd.domain.owner import ensure_owner
+from sdd.domain.project_spec import ProjectSpec
+from sdd.domain.render_context import (
     build_application_contexts,
     build_render_context,
 )
-from project_generator.domain.render_plan import PlannedFile, RenderMode, build_render_plan
-from project_generator.domain.rendered_tree import RenderedFile, RenderedTree
+from sdd.domain.render_plan import PlannedFile, RenderMode, build_render_plan
+from sdd.domain.rendered_tree import RenderedFile, RenderedTree
 
 
 @dataclass(frozen=True)

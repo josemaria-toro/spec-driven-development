@@ -3,7 +3,7 @@
 import re
 import unicodedata
 
-from project_generator.domain.errors import ValidationIssue
+from sdd.domain.errors import ValidationIssue
 
 MAX_DESCRIPTION_LENGTH = 350
 MAX_NAME_LENGTH = 100

@@ -1,7 +1,7 @@
 [project]
-name = "project-generator"
+name = "sdd-api"
 version = "0.1.0"
-description = "Backend of the project generator: validated project specs and deterministic rendering."
+description = "Backend of SDD Project Builder: validated project specs and deterministic rendering."
 requires-python = ">=3.12"
 dependencies = [
     "jinja2>=3.1",
@@ -23,7 +23,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/project_generator"]
+packages = ["src/sdd"]
 
 [tool.ruff]
 line-length = 100
@@ -43,7 +43,7 @@ max-complexity = 10
 strict = true
 python_version = "3.12"
 mypy_path = "src"
-packages = ["project_generator"]
+packages = ["sdd"]
 
 [tool.pytest.ini_options]
 addopts = "--strict-markers"
@@ -54,7 +54,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["project_generator"]
+source = ["sdd"]
 branch = true
 
 [tool.coverage.report]
@@ -62,24 +62,24 @@ fail_under = 80
 show_missing = true
 
 [tool.importlinter]
-root_package = "project_generator"
+root_package = "sdd"
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
 name = "Hexagonal layers: infrastructure -> application -> domain"
 type = "layers"
 layers = [
-    "project_generator.infrastructure",
-    "project_generator.application",
-    "project_generator.domain",
+    "sdd.infrastructure",
+    "sdd.application",
+    "sdd.domain",
 ]
 
 [[tool.importlinter.contracts]]
 name = "Domain and application do not import frameworks or I/O libraries"
 type = "forbidden"
 source_modules = [
-    "project_generator.domain",
-    "project_generator.application",
+    "sdd.domain",
+    "sdd.application",
 ]
 forbidden_modules = [
     "jinja2",

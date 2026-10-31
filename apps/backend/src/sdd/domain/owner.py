@@ -2,7 +2,7 @@
 
 import re
 
-from project_generator.domain.errors import ValidationFailedError, ValidationIssue
+from sdd.domain.errors import ValidationFailedError, ValidationIssue
 
 MAX_OWNER_LENGTH = 39
 

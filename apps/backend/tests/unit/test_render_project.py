@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from project_generator.application.errors import TemplateRenderError
-from project_generator.application.render_project import RenderProject
-from project_generator.domain.errors import ValidationFailedError
-from project_generator.domain.project_spec import ProjectSpec
+from sdd.application.errors import TemplateRenderError
+from sdd.application.render_project import RenderProject
+from sdd.domain.errors import ValidationFailedError
+from sdd.domain.project_spec import ProjectSpec
 from tests.unit.factories import raw_spec
 from tests.unit.fakes import (
     FakeTemplateSource,

@@ -1,7 +1,7 @@
 import pytest
 
-from project_generator.domain.project_spec import ProjectSpec
-from project_generator.domain.render_plan import (
+from sdd.domain.project_spec import ProjectSpec
+from sdd.domain.render_plan import (
     RenderMode,
     RenderPlanError,
     build_render_plan,

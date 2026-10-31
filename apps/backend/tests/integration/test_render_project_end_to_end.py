@@ -199,7 +199,7 @@ def test_changed_template_changes_both_digests(tmp_path: Path, render: Render) -
 
 
 def test_invalid_spec_is_not_rendered_and_nothing_is_written(tmp_path: Path) -> None:
-    from project_generator.domain.errors import ValidationFailedError
+    from sdd.domain.errors import ValidationFailedError
 
     target = tmp_path / "out"
 

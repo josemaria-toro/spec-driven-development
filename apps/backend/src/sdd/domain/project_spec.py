@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 
-from project_generator.domain.catalogue import (
+from sdd.domain.catalogue import (
     KIND_TECHNOLOGIES,
     AiAgent,
     ApplicationKind,
@@ -17,8 +17,8 @@ from project_generator.domain.catalogue import (
     Typology,
     applications_of,
 )
-from project_generator.domain.errors import ValidationFailedError, ValidationIssue
-from project_generator.domain.fields import (
+from sdd.domain.errors import ValidationFailedError, ValidationIssue
+from sdd.domain.fields import (
     validate_description,
     validate_project_name,
     validate_repository_name,

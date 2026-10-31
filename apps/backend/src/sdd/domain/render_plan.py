@@ -4,8 +4,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 
-from project_generator.domain.catalogue import AGENT_ENTRY_FILES
-from project_generator.domain.project_spec import ProjectSpec
+from sdd.domain.catalogue import AGENT_ENTRY_FILES
+from sdd.domain.project_spec import ProjectSpec
 
 TEMPLATE_SUFFIX = ".tmpl"
 _RULESETS_PREFIX = "rulesets/"

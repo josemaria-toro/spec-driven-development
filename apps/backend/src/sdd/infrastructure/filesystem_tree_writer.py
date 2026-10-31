@@ -12,8 +12,8 @@ import shutil
 import tempfile
 from pathlib import Path, PurePosixPath
 
-from project_generator.application.errors import TargetNotEmptyError, UnsafePathError
-from project_generator.domain.rendered_tree import RenderedTree
+from sdd.application.errors import TargetNotEmptyError, UnsafePathError
+from sdd.domain.rendered_tree import RenderedTree
 
 DIRECTORY_MODE = 0o755
 EXECUTABLE_MODE = 0o755

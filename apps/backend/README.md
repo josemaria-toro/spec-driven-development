@@ -1,13 +1,13 @@
-# Project generator: backend
+# SDD Project Builder: backend
 
-Python backend of the project generator, hexagonal architecture (see `harness/stacks/backend-python.md`).
+Python backend of SDD Project Builder, hexagonal architecture (see `harness/stacks/backend-python.md`).
 
 This package currently holds the core: the validated project spec and the deterministic rendering of a new project. It has no inbound adapter (HTTP or CLI) yet.
 
 ## Layout
 
 ```
-src/project_generator/
+src/sdd/
   domain/          # project spec, catalogues, validation rules (standard library only)
   application/     # use cases and ports
   infrastructure/  # adapters: Jinja2 engine, filesystem
