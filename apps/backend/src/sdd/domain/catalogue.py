@@ -22,6 +22,12 @@ class Technology(StrEnum):
     REACT_TYPESCRIPT = "react-typescript"
 
 
+class ProjectType(StrEnum):
+    API = "api"
+    CONSOLE = "console"
+    LIBRARY = "library"
+
+
 class AiAgent(StrEnum):
     CLAUDE = "claude"
 
@@ -38,6 +44,14 @@ KIND_TECHNOLOGIES: Mapping[ApplicationKind, tuple[Technology, ...]] = MappingPro
     {
         ApplicationKind.BACKEND: (Technology.PYTHON, Technology.CSHARP),
         ApplicationKind.FRONTEND: (Technology.REACT_TYPESCRIPT,),
+    }
+)
+
+DEFAULT_PROJECT_TYPE = ProjectType.API
+
+TECHNOLOGY_PROJECT_TYPES: Mapping[Technology, tuple[ProjectType, ...]] = MappingProxyType(
+    {
+        Technology.CSHARP: (ProjectType.API, ProjectType.CONSOLE, ProjectType.LIBRARY),
     }
 )
 

@@ -67,19 +67,19 @@ def test_react_frontend_gets_exactly_its_skeleton_files(
     assert application_files(tmp_path / "out", "frontend") == FRONTEND_REACT_FILES
 
 
-@pytest.mark.parametrize(
-    ("typology", "technologies"),
-    [
-        ("backend", {"backend": "csharp"}),
-        ("fullstack", {"backend": "csharp", "frontend": "react-typescript"}),
-    ],
-)
-def test_csharp_backend_gets_exactly_its_skeleton_files(
-    tmp_path: Path, render: Render, typology: str, technologies: dict[str, str]
+@pytest.mark.parametrize("project_type", sorted(BACKEND_CSHARP_FILES))
+@pytest.mark.parametrize("typology", ["backend", "fullstack"])
+def test_csharp_backend_gets_exactly_the_files_of_its_project_type(
+    tmp_path: Path, render: Render, typology: str, project_type: str
 ) -> None:
-    render(tmp_path / "out", typology=typology, technologies=technologies)
+    technologies = {"backend": "csharp", "frontend": "react-typescript"}
+    if typology == "backend":
+        del technologies["frontend"]
+    render(
+        tmp_path / "out", typology=typology, technologies=technologies, project_type=project_type
+    )
 
-    assert application_files(tmp_path / "out", "backend") == BACKEND_CSHARP_FILES
+    assert application_files(tmp_path / "out", "backend") == BACKEND_CSHARP_FILES[project_type]
 
 
 def test_rendered_python_backend_passes_its_layer_rules(tmp_path: Path, render: Render) -> None:
@@ -111,6 +111,21 @@ def test_forbidden_import_in_the_rendered_python_backend_fails_the_layer_check(
     assert message in result.stdout
 
 
+BACKENDS = [
+    ("python", None),
+    *[("csharp", project_type) for project_type in sorted(BACKEND_CSHARP_FILES)],
+]
+
+
+def backend_overrides(backend: str, project_type: str | None) -> dict[str, object]:
+    overrides: dict[str, object] = {
+        "technologies": {"backend": backend, "frontend": "react-typescript"}
+    }
+    if project_type is not None:
+        overrides["project_type"] = project_type
+    return overrides
+
+
 def skeleton_files(target: Path) -> dict[str, bytes]:
     return {
         path: content
@@ -119,15 +134,15 @@ def skeleton_files(target: Path) -> dict[str, bytes]:
     }
 
 
-@pytest.mark.parametrize("backend", ["python", "csharp"])
+@pytest.mark.parametrize(("backend", "project_type"), BACKENDS)
 def test_different_projects_get_byte_identical_skeletons(
-    tmp_path: Path, render: Render, backend: str
+    tmp_path: Path, render: Render, backend: str, project_type: str | None
 ) -> None:
-    technologies = {"backend": backend, "frontend": "react-typescript"}
-    render(tmp_path / "first", technologies=technologies)
+    overrides = backend_overrides(backend, project_type)
+    render(tmp_path / "first", **overrides)
     render(
         tmp_path / "second",
-        technologies=technologies,
+        **overrides,
         description="Something else entirely",
         project_name="Billing",
         repository_name="billing-service",
@@ -139,14 +154,14 @@ def test_different_projects_get_byte_identical_skeletons(
     assert first == second
 
 
-@pytest.mark.parametrize("backend", ["python", "csharp"])
+@pytest.mark.parametrize(("backend", "project_type"), BACKENDS)
 def test_project_values_do_not_reach_any_skeleton_file(
-    tmp_path: Path, render: Render, backend: str
+    tmp_path: Path, render: Render, backend: str, project_type: str | None
 ) -> None:
     values = ['{{ 7 * 7 }} "quoted"', "<< 7 * 7 >>", "Zebra Platform", "zebra-platform"]
     render(
         tmp_path / "out",
-        technologies={"backend": backend, "frontend": "react-typescript"},
+        **backend_overrides(backend, project_type),
         description=values[0] + values[1],
         project_name=values[2],
         repository_name=values[3],
@@ -170,11 +185,26 @@ def test_technology_without_a_skeleton_renders_only_the_kind_readme(tmp_path: Pa
     assert application_files(target, "backend") == {"apps/backend/README.md"}
 
 
+@pytest.mark.parametrize("project_type", sorted(BACKEND_CSHARP_FILES))
+def test_every_csharp_project_type_renders_the_readme_and_its_skeleton(
+    tmp_path: Path, render: Render, project_type: str
+) -> None:
+    render(
+        tmp_path / "out",
+        typology="backend",
+        technologies={"backend": "csharp"},
+        project_type=project_type,
+    )
+
+    files = application_files(tmp_path / "out", "backend")
+    assert "apps/backend/README.md" in files
+    assert len(files) > 1
+
+
 @pytest.mark.parametrize(
     ("typology", "technologies", "kinds"),
     [
         ("backend", {"backend": "python"}, ["backend"]),
-        ("backend", {"backend": "csharp"}, ["backend"]),
         ("frontend", {"frontend": "react-typescript"}, ["frontend"]),
         (
             "fullstack",
@@ -192,3 +222,32 @@ def test_every_typology_renders_the_readme_and_the_skeleton_of_each_application(
         files = application_files(tmp_path / "out", kind)
         assert f"apps/{kind}/README.md" in files
         assert len(files) > 1
+
+
+@pytest.mark.parametrize("project_type", sorted(BACKEND_CSHARP_FILES))
+def test_readme_of_a_csharp_backend_states_its_project_type(
+    tmp_path: Path, render: Render, project_type: str
+) -> None:
+    render(
+        tmp_path / "out",
+        typology="backend",
+        technologies={"backend": "csharp"},
+        project_type=project_type,
+    )
+
+    readme = (tmp_path / "out/apps/backend/README.md").read_text()
+    assert f"Project type: {project_type}\n" in readme
+
+
+def test_readme_of_a_backend_without_project_types_has_no_project_type_line(
+    tmp_path: Path, render: Render
+) -> None:
+    render(tmp_path / "out", typology="backend", technologies={"backend": "python"})
+
+    assert "Project type" not in (tmp_path / "out/apps/backend/README.md").read_text()
+
+
+def test_omitted_project_type_renders_the_api_files(tmp_path: Path, render: Render) -> None:
+    render(tmp_path / "out", typology="backend", technologies={"backend": "csharp"})
+
+    assert application_files(tmp_path / "out", "backend") == BACKEND_CSHARP_FILES["api"]

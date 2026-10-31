@@ -57,7 +57,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          global-json-file: templates/apps/backend/csharp/global.json
+          global-json-file: templates/apps/backend/csharp/library/global.json
 
       - name: Install dependencies
         run: uv sync --frozen

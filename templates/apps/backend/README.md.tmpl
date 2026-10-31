@@ -2,6 +2,10 @@
 
 Technology: << application.technology | md_escape >>
 
+<% if application.project_type %>
+Project type: << application.project_type | md_escape >>
+
+<% endif %>
 Project: << project.name | md_escape >>
 
 Follow the stack sheet [`harness/stacks/<< application.stack_sheet | md_escape >>`](../../harness/stacks/<< application.stack_sheet | md_escape >>) for runtime, tooling, commands and folder structure, and declare the architecture (hexagonal or clean) there.

@@ -58,10 +58,10 @@ def test_backend_only_project_has_only_the_backend_application(
     tmp_path: Path, render: Render
 ) -> None:
     target = tmp_path / "backend"
-    render(target, typology="backend", technologies={"backend": "csharp"})
+    render(target, typology="backend", technologies={"backend": "csharp"}, project_type="library")
 
     files = set(read_tree(target))
-    assert files == ROOT_FILES | HARNESS_FILES | BACKEND_CSHARP_FILES
+    assert files == ROOT_FILES | HARNESS_FILES | BACKEND_CSHARP_FILES["library"]
     assert "csharp" in (target / "apps/backend/README.md").read_text()
 
 
