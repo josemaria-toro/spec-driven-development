@@ -6,6 +6,7 @@ Slow and networked (installs locked dependencies, audits them), so it is not col
 
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 from collections.abc import Iterator, Sequence
@@ -38,10 +39,27 @@ def require_tool(name: str) -> None:
     pytest.skip(message)
 
 
+def require_dotnet_sdk() -> None:
+    """Fail in CI and skip elsewhere when no .NET SDK is installed (a runtime is not enough)."""
+    require_tool("dotnet")
+    sdks = run(["dotnet", "--list-sdks"], Path.cwd(), check=False).stdout.strip()
+    if sdks:
+        return
+    message = "no .NET SDK is installed"
+    if IN_CI:
+        pytest.fail(message)
+    pytest.skip(message)
+
+
 def run(
     command: Sequence[str], cwd: Path, *, check: bool = True
 ) -> subprocess.CompletedProcess[str]:
     env = {key: value for key, value in os.environ.items() if key != "VIRTUAL_ENV"}
+    env |= {
+        "DOTNET_CLI_UI_LANGUAGE": "en",
+        "DOTNET_NOLOGO": "1",
+        "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    }
     result = subprocess.run(  # noqa: S603
         command,
         cwd=cwd,
@@ -85,6 +103,22 @@ def backend(fullstack: Path) -> Iterator[Path]:
 
 
 @pytest.fixture(scope="module")
+def csharp_backend(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
+    require_dotnet_sdk()
+    target = tmp_path_factory.mktemp("generated") / "csharp"
+    RenderProject(
+        JinjaTemplateEngine(), FilesystemTemplateSource(TEMPLATES_ROOT), FilesystemTreeWriter()
+    ).execute(raw_spec(typology="backend", technologies={"backend": "csharp"}), OWNER, target)
+    directory = target / "apps/backend"
+    lockfiles = sorted(directory.rglob("packages.lock.json"))
+    before = [digest(lockfile) for lockfile in lockfiles]
+    assert lockfiles, "the C# skeleton ships no lock files"
+    run(["dotnet", "restore", "--locked-mode"], directory)
+    yield directory
+    assert [digest(lockfile) for lockfile in lockfiles] == before, "a lock file changed"
+
+
+@pytest.fixture(scope="module")
 def frontend(fullstack: Path) -> Iterator[Path]:
     require_tool("pnpm")
     directory = fullstack / "apps/frontend"
@@ -121,6 +155,113 @@ def test_backend_locked_dependencies_have_no_known_vulnerability(
     )
 
     run(["uvx", "pip-audit", "-r", str(requirements), "--no-deps", "--disable-pip"], backend)
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        ["format", "--verify-no-changes"],
+        ["build", "-warnaserror", "--no-restore"],
+        ["test", "tests/App.UnitTests", "-p:CollectCoverage=true", "--no-restore"],
+        ["test", "tests/App.IntegrationTests", "--no-restore"],
+        ["test", "tests/App.ArchitectureTests", "--no-restore"],
+    ],
+    ids=lambda command: " ".join(command[:2]),
+)
+def test_csharp_backend_gate_passes(csharp_backend: Path, command: list[str]) -> None:
+    run(["dotnet", *command], csharp_backend)
+
+
+def test_csharp_backend_locked_packages_have_no_high_or_critical_vulnerability(
+    csharp_backend: Path,
+) -> None:
+    result = run(
+        ["dotnet", "list", "package", "--vulnerable", "--include-transitive"], csharp_backend
+    )
+
+    assert not re.search(r"\b(High|Critical)\b", result.stdout), result.stdout
+
+
+def test_csharp_domain_using_an_http_library_fails_the_architecture_tests(
+    csharp_backend: Path,
+) -> None:
+    leak = csharp_backend / "src/App.Domain/Remote.cs"
+    leak.write_text(
+        "using System.Net.Http;\n\nnamespace App.Domain;\n\n"
+        "/// <summary>A forbidden dependency.</summary>\n"
+        "public sealed class Remote\n{\n    /// <summary>The client.</summary>\n"
+        "    public HttpClient Client { get; } = new();\n}\n"
+    )
+    try:
+        result = run(["dotnet", "test", "tests/App.ArchitectureTests"], csharp_backend, check=False)
+    finally:
+        leak.unlink()
+
+    assert result.returncode != 0
+    assert "App.Domain.Remote" in result.stdout
+
+
+def test_csharp_domain_referencing_infrastructure_fails_the_build(csharp_backend: Path) -> None:
+    project = csharp_backend / "src/App.Domain/App.Domain.csproj"
+    original = project.read_text()
+    project.write_text(
+        original.replace(
+            "</Project>",
+            "  <ItemGroup>\n"
+            '    <ProjectReference Include="../App.Infrastructure/App.Infrastructure.csproj" />\n'
+            "  </ItemGroup>\n</Project>",
+        )
+    )
+    try:
+        result = run(["dotnet", "build", "--no-restore"], csharp_backend, check=False)
+    finally:
+        project.write_text(original)
+
+    assert result.returncode != 0
+    assert "circular" in (result.stdout + result.stderr).lower()
+
+
+def test_csharp_warning_fails_the_build(csharp_backend: Path) -> None:
+    source = csharp_backend / "src/App.Domain/Greeting.cs"
+    original = source.read_text()
+    source.write_text(
+        original.replace("var trimmed = name.Trim();", "var trimmed = name.Trim(); var unused = 1;")
+    )
+    try:
+        result = run(["dotnet", "build", "--no-restore"], csharp_backend, check=False)
+    finally:
+        source.write_text(original)
+
+    assert result.returncode != 0
+    assert "error" in result.stdout.lower()
+
+
+def test_csharp_coverage_below_the_threshold_fails(csharp_backend: Path) -> None:
+    tests = [
+        csharp_backend / "tests/App.UnitTests" / name
+        for name in ("GreetingTests.cs", "GreetUseCaseTests.cs")
+    ]
+    contents = [test.read_text() for test in tests]
+    for test in tests:
+        test.unlink()
+    placeholder = csharp_backend / "tests/App.UnitTests/PlaceholderTests.cs"
+    placeholder.write_text(
+        "using Xunit;\n\nnamespace App.UnitTests;\n\npublic sealed class PlaceholderTests\n{\n"
+        "    [Fact]\n    public void Placeholder_Always_Passes() => Assert.True(true);\n}\n"
+    )
+    try:
+        result = run(
+            ["dotnet", "test", "tests/App.UnitTests", "-p:CollectCoverage=true", "--no-restore"],
+            csharp_backend,
+            check=False,
+        )
+    finally:
+        placeholder.unlink()
+        for test, content in zip(tests, contents, strict=True):
+            test.write_text(content)
+
+    assert result.returncode != 0
+    assert "below the specified 80" in result.stdout
 
 
 @pytest.mark.parametrize(
