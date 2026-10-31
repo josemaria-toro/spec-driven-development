@@ -57,6 +57,15 @@ def test_rulesets_are_not_part_of_the_repository_tree() -> None:
     assert not any("ruleset" in destination for destination in result)
 
 
+def test_workflows_are_copied_verbatim_into_the_github_directory() -> None:
+    templates = {**standard_templates(), "github/workflows/repository.yml": b"name: Repository\n"}
+    plan = build_render_plan(ProjectSpec.from_raw(raw_spec()), templates)
+
+    workflow = next(file for file in plan if file.source == "github/workflows/repository.yml")
+    assert workflow.destination == ".github/workflows/repository.yml"
+    assert workflow.mode is RenderMode.VERBATIM
+
+
 def test_only_the_selected_agent_entry_file_is_planned() -> None:
     result = destinations(ProjectSpec.from_raw(raw_spec()))
 

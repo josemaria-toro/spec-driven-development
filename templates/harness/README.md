@@ -36,7 +36,19 @@ adr/
 3. Adjust the guides to your context; any change to a guardrail is recorded as an ADR.
 4. Automate the controls in `guides/guardrails.md` (pre-commit and CI).
 
+## Repository workflow
+
+`.github/workflows/repository.yml` is generated with every project and runs on pull requests to `main`, on pushes to `main` and weekly. Its jobs are named exactly like the status checks the `main` ruleset requires, so keep the names and the ruleset in sync:
+
+| Job (required check) | What it does |
+|---|---|
+| `Secret scan` | Scans the full Git history with gitleaks. |
+| `OpenSpec validate` | Runs `openspec validate --all`. |
+| `Commit type matches branch prefix` | Checks that every commit type of a pull request equals its branch prefix (see `guides/git-workflow.md`). |
+
+It needs no secret other than the default `GITHUB_TOKEN`. gitleaks is downloaded as a release binary and checked against a pinned SHA-256 before it runs. To bump it, change `GITLEAKS_VERSION` and `GITLEAKS_SHA256` together (the checksum of `gitleaks_<version>_linux_x64.tar.gz` in the release assets), and compute the checksum yourself from the downloaded file as well as reading it from the release.
+
 ## Still to define
 
-- Pre-commit configuration and CI workflows.
-- PR template; OpenSpec initialization (`openspec init`) and CI validation.
+- Pre-commit configuration and the CI workflows of the applications (tests, lint, types, dependency audit, CodeQL).
+- PR template; OpenSpec initialization (`openspec init`).
