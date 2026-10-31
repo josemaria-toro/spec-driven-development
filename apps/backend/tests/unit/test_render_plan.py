@@ -252,6 +252,7 @@ def test_files_shared_by_every_project_type_are_planned_for_each_one(project_typ
     assert "apps/backend/shared.props" in result
 
 
+@pytest.mark.usefixtures("python_without_project_types")
 def test_technology_without_project_types_keeps_folders_named_like_a_type() -> None:
     spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "python"}))
 
@@ -282,3 +283,19 @@ def test_project_type_directory_of_a_kind_outside_the_typology_is_skipped() -> N
     result = destinations(csharp_spec(project_type="api"), templates)
 
     assert not [d for d in result if d.startswith("apps/frontend/") and d.endswith("App.tsx")]
+
+
+@pytest.mark.parametrize(("project_type", "other"), [("console", "library"), ("library", "api")])
+def test_python_files_are_selected_by_project_type(project_type: str, other: str) -> None:
+    spec = ProjectSpec.from_raw(
+        raw_spec(typology="backend", technologies={"backend": "python"}, project_type=project_type)
+    )
+    templates = standard_templates() | {
+        f"apps/backend/python/{project_type}/pyproject.toml": b"selected",
+        f"apps/backend/python/{other}/pyproject.toml": b"other",
+    }
+
+    plan = build_render_plan(spec, templates.keys())
+
+    sources = [file.source for file in plan if file.destination == "apps/backend/pyproject.toml"]
+    assert sources == [f"apps/backend/python/{project_type}/pyproject.toml"]

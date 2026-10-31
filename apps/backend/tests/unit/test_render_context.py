@@ -20,11 +20,19 @@ def test_csharp_application_without_a_type_gets_the_default() -> None:
     assert build_application_contexts(spec)["backend"]["project_type"] == "api"
 
 
-def test_technology_without_project_types_gets_an_empty_value() -> None:
+def test_application_without_project_types_gets_an_empty_value() -> None:
     contexts = build_application_contexts(ProjectSpec.from_raw(raw_spec()))
 
-    assert contexts["backend"]["project_type"] == ""
     assert contexts["frontend"]["project_type"] == ""
+
+
+@pytest.mark.parametrize("project_type", ["api", "console", "library"])
+def test_python_application_gets_its_project_type(project_type: str) -> None:
+    spec = ProjectSpec.from_raw(
+        raw_spec(typology="backend", technologies={"backend": "python"}, project_type=project_type)
+    )
+
+    assert build_application_contexts(spec)["backend"]["project_type"] == project_type
 
 
 def test_render_context_lists_the_project_type_of_each_application() -> None:

@@ -26,7 +26,9 @@ Each application starts from a minimal skeleton that already passes its own qual
 | `apps/backend` (C#, .NET 10 SDK) | `dotnet restore --locked-mode`, `dotnet format --verify-no-changes`, `dotnet build -warnaserror --no-restore`, `dotnet test tests/App.UnitTests -p:CollectCoverage=true --no-restore`, `dotnet test tests/App.IntegrationTests --no-restore`, `dotnet test tests/App.ArchitectureTests --no-restore` |
 | `apps/frontend` (React, TypeScript; Node 20 or newer) | `pnpm install --frozen-lockfile`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test:unit --coverage`, `pnpm test:integration`, `pnpm exec playwright install chromium` (once), `pnpm e2e` |
 
-The C# backend skeleton depends on the project type chosen when the project was created (`api`, `console` or `library`); `apps/backend/README.md` states it. Run it with `dotnet run --project src/App.Api` (`api`), `dotnet run --project src/App.Console -- <name>` (`console`) or pack it with `dotnet pack` (`library`; set the package id and metadata before publishing).
+The Python backend skeleton depends on the project type chosen when the project was created (`api`, `console` or `library`); `apps/backend/README.md` states it. Run it with `uv run uvicorn app.main:app --reload` (`api`) or `uv run backend <name>` (`console`), or build it with `uv build` (`library`; rename the distribution and set its metadata in `pyproject.toml` before publishing). The `api` skeleton keeps its interactive documentation off: for development, remove the `docs_url`, `redoc_url` and `openapi_url` arguments in `create_app()` (`src/app/interfaces/api.py`).
+
+The C# backend skeleton also depends on the project type chosen when the project was created (`api`, `console` or `library`); `apps/backend/README.md` states it. Run it with `dotnet run --project src/App.Api` (`api`), `dotnet run --project src/App.Console -- <name>` (`console`) or pack it with `dotnet pack` (`library`; set the package id and metadata before publishing).
 
 A technology that has no skeleton in the templates only has its `README.md`.
 

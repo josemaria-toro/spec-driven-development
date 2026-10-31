@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import subprocess
+import zipfile
 from collections.abc import Iterator, Sequence
 from pathlib import Path
 
@@ -90,10 +91,27 @@ def fullstack(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return target
 
 
+@pytest.fixture(scope="module", params=["api", "console", "library"])
+def python_project_type(request: pytest.FixtureRequest) -> str:
+    return str(request.param)
+
+
 @pytest.fixture(scope="module")
-def backend(fullstack: Path) -> Iterator[Path]:
+def backend(tmp_path_factory: pytest.TempPathFactory, python_project_type: str) -> Iterator[Path]:
     require_tool("uv")
-    directory = fullstack / "apps/backend"
+    target = tmp_path_factory.mktemp("generated") / f"python-{python_project_type}"
+    RenderProject(
+        JinjaTemplateEngine(), FilesystemTemplateSource(TEMPLATES_ROOT), FilesystemTreeWriter()
+    ).execute(
+        raw_spec(
+            typology="backend",
+            technologies={"backend": "python"},
+            project_type=python_project_type,
+        ),
+        OWNER,
+        target,
+    )
+    directory = target / "apps/backend"
     lockfile = directory / "uv.lock"
     before = digest(lockfile)
     run(["uv", "lock", "--check"], directory)
@@ -158,6 +176,61 @@ def frontend(fullstack: Path) -> Iterator[Path]:
 )
 def test_backend_gate_passes(backend: Path, command: list[str]) -> None:
     run(["uv", "run", *command], backend)
+
+
+def test_python_library_can_be_built_with_the_typing_marker(
+    backend: Path, python_project_type: str, tmp_path: Path
+) -> None:
+    if python_project_type != "library":
+        pytest.skip("only the library type is built")
+
+    run(["uv", "build", "--out-dir", str(tmp_path)], backend)
+
+    wheel = next(tmp_path.glob("*.whl"))
+    assert next(tmp_path.glob("*.tar.gz"))
+    with zipfile.ZipFile(wheel) as archive:
+        assert "app/py.typed" in archive.namelist()
+
+
+def test_python_console_runs_with_valid_and_invalid_arguments(
+    backend: Path, python_project_type: str
+) -> None:
+    if python_project_type != "console":
+        pytest.skip("only the console type has a command")
+
+    valid = run(["uv", "run", "--frozen", "backend", "Ada"], backend)
+    invalid = run(["uv", "run", "--frozen", "backend", "Ada", "Grace"], backend, check=False)
+
+    assert valid.stdout == "Hello, Ada!\n"
+    assert invalid.returncode == 2
+    assert invalid.stdout == ""
+    assert "usage:" in invalid.stderr
+
+
+@pytest.mark.parametrize(
+    ("module", "line", "needs_interfaces"),
+    [
+        ("src/app/domain/greeting.py", "from app.interfaces import cli", True),
+        ("src/app/application/greet.py", "import fastapi", False),
+    ],
+)
+def test_python_layer_violations_fail_the_layer_check(
+    backend: Path, python_project_type: str, module: str, line: str, needs_interfaces: bool
+) -> None:
+    if python_project_type == "library" and needs_interfaces:
+        pytest.skip("the library type has no interfaces layer")
+    if python_project_type != "api" and "fastapi" in line:
+        pytest.skip("the framework import is checked on the api type, where it is installed")
+    path = backend / module
+    original = path.read_text()
+    path.write_text(f"{original}\n{line}\n")
+    try:
+        result = run(["uv", "run", "lint-imports"], backend, check=False)
+    finally:
+        path.write_text(original)
+
+    assert result.returncode != 0
+    assert "not allowed to import" in result.stdout
 
 
 def test_backend_locked_dependencies_have_no_known_vulnerability(

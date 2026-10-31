@@ -15,7 +15,7 @@ TEMPLATES_ROOT = REPOSITORY_ROOT / "templates"
 
 Render = Callable[..., RenderResult]
 
-BACKEND_PYTHON_FILES = {
+BACKEND_PYTHON_LIBRARY_FILES = {
     "apps/backend/.gitignore",
     "apps/backend/README.md",
     "apps/backend/pyproject.toml",
@@ -25,13 +25,34 @@ BACKEND_PYTHON_FILES = {
     "apps/backend/src/app/domain/__init__.py",
     "apps/backend/src/app/domain/greeting.py",
     "apps/backend/src/app/infrastructure/__init__.py",
+    "apps/backend/src/app/py.typed",
     "apps/backend/tests/__init__.py",
     "apps/backend/tests/integration/__init__.py",
     "apps/backend/tests/integration/test_greet.py",
     "apps/backend/tests/unit/__init__.py",
     "apps/backend/tests/unit/test_greet.py",
     "apps/backend/tests/unit/test_greeting.py",
+    "apps/backend/tests/unit/test_typing_marker.py",
     "apps/backend/uv.lock",
+}
+BACKEND_PYTHON_CONSOLE_FILES = BACKEND_PYTHON_LIBRARY_FILES | {
+    "apps/backend/src/app/__main__.py",
+    "apps/backend/src/app/interfaces/__init__.py",
+    "apps/backend/src/app/interfaces/cli.py",
+    "apps/backend/tests/integration/test_cli_process.py",
+    "apps/backend/tests/unit/test_cli.py",
+}
+BACKEND_PYTHON_API_FILES = BACKEND_PYTHON_LIBRARY_FILES | {
+    "apps/backend/src/app/interfaces/__init__.py",
+    "apps/backend/src/app/interfaces/api.py",
+    "apps/backend/src/app/main.py",
+    "apps/backend/tests/integration/test_api_server.py",
+    "apps/backend/tests/unit/test_api.py",
+}
+BACKEND_PYTHON_FILES = {
+    "api": BACKEND_PYTHON_API_FILES,
+    "console": BACKEND_PYTHON_CONSOLE_FILES,
+    "library": BACKEND_PYTHON_LIBRARY_FILES,
 }
 
 BACKEND_CSHARP_LIBRARY_FILES = {

@@ -75,7 +75,7 @@ def test_fullstack_spec_resolves_one_backend_and_one_frontend_application() -> N
     spec = ProjectSpec.from_raw(raw_spec())
 
     assert spec.applications == (
-        Application(ApplicationKind.BACKEND, Technology.PYTHON),
+        Application(ApplicationKind.BACKEND, Technology.PYTHON, ProjectType.API),
         Application(ApplicationKind.FRONTEND, Technology.REACT_TYPESCRIPT),
     )
     assert [a.directory for a in spec.applications] == ["apps/backend", "apps/frontend"]
@@ -257,6 +257,7 @@ def test_project_type_must_be_text() -> None:
     assert fields_with_issues(error) == ["project_type"]
 
 
+@pytest.mark.usefixtures("python_without_project_types")
 def test_technology_without_project_types_rejects_one() -> None:
     with pytest.raises(ValidationFailedError) as error:
         ProjectSpec.from_raw(
@@ -267,6 +268,7 @@ def test_technology_without_project_types_rejects_one() -> None:
     assert "offers no project types" in error.value.issues[0].reason
 
 
+@pytest.mark.usefixtures("python_without_project_types")
 def test_technology_without_project_types_needs_none() -> None:
     spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "python"}))
 
@@ -318,6 +320,21 @@ def test_direct_construction_resolves_the_default_type() -> None:
     assert backend_project_type(spec) is ProjectType.API
 
 
+def test_direct_construction_refuses_a_project_type_on_a_frontend() -> None:
+    with pytest.raises(ValidationFailedError):
+        ProjectSpec(
+            agent=ProjectSpec.from_raw(raw_spec()).agent,
+            applications=(
+                Application(ApplicationKind.FRONTEND, Technology.REACT_TYPESCRIPT, ProjectType.API),
+            ),
+            description="",
+            project_name="Orders",
+            repository_name="orders",
+            typology=Typology.FRONTEND,
+        )
+
+
+@pytest.mark.usefixtures("python_without_project_types")
 def test_direct_construction_refuses_a_type_the_technology_does_not_offer() -> None:
     with pytest.raises(ValidationFailedError):
         ProjectSpec(
@@ -346,10 +363,36 @@ def test_default_project_type_hashes_like_an_explicit_api() -> None:
     assert omitted.content_hash() == explicit.content_hash()
 
 
-def test_python_spec_has_no_project_type_in_its_canonical_form() -> None:
+@pytest.mark.usefixtures("python_without_project_types")
+def test_spec_without_project_types_has_none_in_its_canonical_form() -> None:
     canonical = ProjectSpec.from_raw(raw_spec()).canonical_form()
 
     assert "project_type" not in canonical
+
+
+@pytest.mark.parametrize("project_type", ["api", "console", "library"])
+def test_each_python_project_type_is_accepted(project_type: str) -> None:
+    spec = ProjectSpec.from_raw(
+        raw_spec(typology="backend", technologies={"backend": "python"}, project_type=project_type)
+    )
+
+    assert backend_project_type(spec) is ProjectType(project_type)
+
+
+def test_omitted_project_type_defaults_to_api_for_python() -> None:
+    spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "python"}))
+
+    assert backend_project_type(spec) is ProjectType.API
+    assert '"project_type":"api"' in spec.canonical_form()
+
+
+def test_python_project_type_changes_the_hash() -> None:
+    base = raw_spec(typology="backend", technologies={"backend": "python"})
+
+    library = ProjectSpec.from_raw({**base, "project_type": "library"})
+    console = ProjectSpec.from_raw({**base, "project_type": "console"})
+
+    assert library.content_hash() != console.content_hash()
 
 
 def test_canonical_form_of_a_csharp_spec_holds_the_resolved_project_type() -> None:
