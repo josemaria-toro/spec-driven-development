@@ -22,8 +22,8 @@
 ## 4. Generated C# skeleton passes its gates in CI
 
 - [x] 4.1 Extend `tests/generated/test_generated_skeletons.py` with the C# gates, the vulnerability parse of `dotnet list package --vulnerable --include-transitive`, the lock-file-unchanged check and the two negative checks of design decision 9, skipping with a reason when `dotnet` is missing outside CI and failing when missing in CI; verify it passes locally
-- [ ] 4.2 Add the `actions/setup-dotnet` step (version from the skeleton's `global.json`, pinned action version) to `.github/workflows/skeletons.yml` and verify the job passes on the pull request of this change
-- [ ] 4.3 Verify the job fails when the C# skeleton is broken on purpose (for example an unused variable that raises a warning in a template file), on a temporary draft pull request that is closed afterwards, and record the result in the pull request
+- [x] 4.2 Add the `actions/setup-dotnet` step (version from the skeleton's `global.json`, pinned action version) to `.github/workflows/skeletons.yml` and verify the job passes on the pull request of this change
+- [x] 4.3 Verify the job fails when the C# skeleton is broken on purpose (for example an unused variable that raises a warning in a template file), on a temporary draft pull request that is closed afterwards, and record the result in the pull request
 
 ## 5. Quality gates and documentation
 
@@ -31,7 +31,7 @@
 - [x] 5.2 Run `uv run pytest tests/unit --cov --cov-fail-under=80` and `uv run pytest tests/integration` and verify coverage stays at or above 80% and all tests pass
 - [x] 5.3 Update the "Applications" section of `templates/project/README.md.tmpl` (add the C# gates and how to refresh its lock files, and remove the sentence saying C# only has its README) and `apps/backend/README.md` (templates table), and verify the commands they name run as written in a rendered copy
 - [x] 5.4 Run `openspec validate add-csharp-application-skeleton --strict` and verify it is valid
-- [ ] 5.5 Complete the OWASP checklist (vulnerable and outdated components, software and data integrity) in the pull request, including the justification of the two test-host packages, and verify the vulnerability and secret checks of CI pass without bypassing them
+- [x] 5.5 Complete the OWASP checklist (vulnerable and outdated components, software and data integrity) in the pull request, including the justification of the two test-host packages, and verify the vulnerability and secret checks of CI pass without bypassing them
 
 ## Workflow follow-up
 
