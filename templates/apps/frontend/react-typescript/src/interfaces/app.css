@@ -1,0 +1,87 @@
+/* Design tokens. Breakpoints cannot be custom properties in media queries, so they are
+   defined once here as documentation and used literally below: 48rem (tablet), 64rem (desktop). */
+:root {
+  --color-background: #ffffff;
+  --color-focus: #0b57d0;
+  --color-text: #1f1f1f;
+  --font-size-base: 1rem;
+  --space-m: 1rem;
+  --space-l: 1.5rem;
+  --touch-target: 2.75rem;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #121212;
+    --color-focus: #8ab4f8;
+    --color-text: #f1f1f1;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: system-ui, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.app-header {
+  padding: var(--space-m);
+}
+
+.app-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+main {
+  margin-inline: auto;
+  max-width: 60rem;
+  padding: var(--space-m);
+}
+
+:focus-visible {
+  outline: 0.1875rem solid var(--color-focus);
+  outline-offset: 0.125rem;
+}
+
+main:focus {
+  outline: none;
+}
+
+.skip-link {
+  background: var(--color-background);
+  color: var(--color-text);
+  inset-block-start: var(--space-m);
+  inset-inline-start: var(--space-m);
+  min-block-size: var(--touch-target);
+  padding: var(--space-m);
+  position: absolute;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (min-width: 48rem) {
+  main {
+    padding: var(--space-l);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skip-link {
+    transition: transform 0.15s ease-out;
+  }
+}

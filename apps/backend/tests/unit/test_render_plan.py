@@ -120,3 +120,83 @@ def test_missing_agent_entry_template_is_refused() -> None:
 
     with pytest.raises(RenderPlanError, match="agent entry file"):
         build_render_plan(ProjectSpec.from_raw(raw_spec()), templates.keys())
+
+
+def technology_templates() -> dict[str, bytes]:
+    return standard_templates() | {
+        "apps/backend/python/pyproject.toml": b"python",
+        "apps/backend/python/src/app/__init__.py": b"",
+        "apps/backend/csharp/Backend.csproj": b"csharp",
+        "apps/frontend/react-typescript/package.json": b"{}",
+    }
+
+
+def test_only_the_files_of_the_selected_technology_are_planned() -> None:
+    result = destinations(ProjectSpec.from_raw(raw_spec()), technology_templates())
+
+    assert "apps/backend/pyproject.toml" in result
+    assert "apps/backend/src/app/__init__.py" in result
+    assert "apps/frontend/package.json" in result
+    assert not any(
+        "csharp" in destination or "Backend.csproj" in destination for destination in result
+    )
+
+
+def test_the_technology_directory_is_dropped_from_the_destination() -> None:
+    result = destinations(ProjectSpec.from_raw(raw_spec()), technology_templates())
+
+    assert not any("/python/" in destination for destination in result)
+    assert not any("/react-typescript/" in destination for destination in result)
+
+
+def test_files_shared_by_every_technology_are_planned_for_each_one() -> None:
+    for technology in ("python", "csharp"):
+        spec = ProjectSpec.from_raw(
+            raw_spec(typology="backend", technologies={"backend": technology})
+        )
+
+        assert "apps/backend/README.md" in destinations(spec, technology_templates())
+
+
+def test_kinds_select_their_technology_independently() -> None:
+    spec = ProjectSpec.from_raw(
+        raw_spec(technologies={"backend": "csharp", "frontend": "react-typescript"})
+    )
+
+    result = destinations(spec, technology_templates())
+
+    assert "apps/backend/Backend.csproj" in result
+    assert "apps/backend/pyproject.toml" not in result
+    assert "apps/frontend/package.json" in result
+
+
+def test_technology_without_files_plans_only_the_shared_files() -> None:
+    spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "csharp"}))
+    templates = standard_templates() | {"apps/backend/python/pyproject.toml": b"python"}
+
+    result = destinations(spec, templates)
+
+    assert [d for d in result if d.startswith("apps/")] == ["apps/backend/README.md"]
+
+
+def test_technology_directory_of_a_kind_outside_the_typology_is_skipped() -> None:
+    spec = ProjectSpec.from_raw(raw_spec(typology="backend", technologies={"backend": "python"}))
+
+    result = destinations(spec, technology_templates())
+
+    assert "apps/frontend/package.json" not in result
+
+
+def test_shared_and_technology_file_with_the_same_destination_are_refused() -> None:
+    templates = technology_templates() | {"apps/backend/pyproject.toml": b"shared"}
+
+    with pytest.raises(RenderPlanError, match="more than once"):
+        build_render_plan(ProjectSpec.from_raw(raw_spec()), templates.keys())
+
+
+def test_a_deeper_folder_named_like_a_technology_is_not_a_technology_directory() -> None:
+    templates = technology_templates() | {"apps/backend/python/docs/csharp/notes.md": b"x"}
+
+    result = destinations(ProjectSpec.from_raw(raw_spec()), templates)
+
+    assert "apps/backend/docs/csharp/notes.md" in result

@@ -50,6 +50,7 @@ addopts = "--strict-markers"
 testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
+    "generated: renders each typology and runs the gates of the generated applications",
     "integration: tests that use real adapters (filesystem)",
 ]
 

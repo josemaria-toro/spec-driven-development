@@ -71,7 +71,8 @@ Templates (`templates/` at the repository root) are mapped as follows; only file
 | `github/*` | `.github/*` |
 | `agents/<agent>/*` | repository root (only the selected agent) |
 | `project/**` | repository root |
-| `apps/<kind>/**` | `apps/<kind>/**` (only the kinds of the typology) |
+| `apps/<kind>/<technology>/**` | `apps/<kind>/**` (only the kinds of the typology and only the technology the spec selects for the kind; the technology directory is dropped) |
+| `apps/<kind>/*` | `apps/<kind>/*` (only the kinds of the typology; shared by every technology) |
 
 Template syntax is `<< value >>`, `<% block %>` and `<# comment #>`, so `${{ ... }}` and `[[ ... ]]` pass through untouched. Every user value must use the filter of its target format: `json_str` (YAML and JSON), `md_escape` (Markdown) or `yaml_block` (text inside a YAML block scalar); a lint test enforces it. Values are data and are never evaluated as template syntax.
 
