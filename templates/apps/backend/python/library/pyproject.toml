@@ -27,13 +27,13 @@ target-version = "py312"
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "C90", "SIM", "S", "RUF"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C90", "SIM", "S", "RUF", "D1"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
+"tests/**" = ["S101", "D1"]
 
 [tool.mypy]
 strict = true

@@ -37,19 +37,25 @@ def run_layer_check(backend: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
-@pytest.mark.parametrize(
-    ("typology", "technologies"),
-    [
-        ("backend", {"backend": "python"}),
-        ("fullstack", {"backend": "python", "frontend": "react-typescript"}),
-    ],
-)
-def test_python_backend_gets_exactly_its_skeleton_files(
-    tmp_path: Path, render: Render, typology: str, technologies: dict[str, str]
+@pytest.mark.parametrize("project_type", sorted(BACKEND_PYTHON_FILES))
+@pytest.mark.parametrize("typology", ["backend", "fullstack"])
+def test_python_backend_gets_exactly_the_files_of_its_project_type(
+    tmp_path: Path, render: Render, typology: str, project_type: str
 ) -> None:
-    render(tmp_path / "out", typology=typology, technologies=technologies)
+    technologies = {"backend": "python", "frontend": "react-typescript"}
+    if typology == "backend":
+        del technologies["frontend"]
+    render(
+        tmp_path / "out", typology=typology, technologies=technologies, project_type=project_type
+    )
 
-    assert application_files(tmp_path / "out", "backend") == BACKEND_PYTHON_FILES
+    assert application_files(tmp_path / "out", "backend") == BACKEND_PYTHON_FILES[project_type]
+
+
+def test_omitted_python_project_type_renders_the_api_files(tmp_path: Path, render: Render) -> None:
+    render(tmp_path / "out", typology="backend", technologies={"backend": "python"})
+
+    assert application_files(tmp_path / "out", "backend") == BACKEND_PYTHON_FILES["api"]
 
 
 @pytest.mark.parametrize(
@@ -82,14 +88,23 @@ def test_csharp_backend_gets_exactly_the_files_of_its_project_type(
     assert application_files(tmp_path / "out", "backend") == BACKEND_CSHARP_FILES[project_type]
 
 
-def test_rendered_python_backend_passes_its_layer_rules(tmp_path: Path, render: Render) -> None:
-    render(tmp_path / "out", typology="backend", technologies={"backend": "python"})
+@pytest.mark.parametrize("project_type", sorted(BACKEND_PYTHON_FILES))
+def test_rendered_python_backend_passes_its_layer_rules(
+    tmp_path: Path, render: Render, project_type: str
+) -> None:
+    render(
+        tmp_path / "out",
+        typology="backend",
+        technologies={"backend": "python"},
+        project_type=project_type,
+    )
 
     result = run_layer_check(tmp_path / "out/apps/backend")
 
     assert result.returncode == 0, result.stdout
 
 
+@pytest.mark.parametrize("project_type", sorted(BACKEND_PYTHON_FILES))
 @pytest.mark.parametrize(
     ("import_line", "message"),
     [
@@ -98,9 +113,14 @@ def test_rendered_python_backend_passes_its_layer_rules(tmp_path: Path, render: 
     ],
 )
 def test_forbidden_import_in_the_rendered_python_backend_fails_the_layer_check(
-    tmp_path: Path, render: Render, import_line: str, message: str
+    tmp_path: Path, render: Render, import_line: str, message: str, project_type: str
 ) -> None:
-    render(tmp_path / "out", typology="backend", technologies={"backend": "python"})
+    render(
+        tmp_path / "out",
+        typology="backend",
+        technologies={"backend": "python"},
+        project_type=project_type,
+    )
     backend = tmp_path / "out/apps/backend"
     domain_module = backend / "src/app/domain/greeting.py"
     domain_module.write_text(f"{domain_module.read_text()}\n{import_line}\n")
@@ -112,7 +132,7 @@ def test_forbidden_import_in_the_rendered_python_backend_fails_the_layer_check(
 
 
 BACKENDS = [
-    ("python", None),
+    *[("python", project_type) for project_type in sorted(BACKEND_PYTHON_FILES)],
     *[("csharp", project_type) for project_type in sorted(BACKEND_CSHARP_FILES)],
 ]
 
@@ -224,14 +244,14 @@ def test_every_typology_renders_the_readme_and_the_skeleton_of_each_application(
         assert len(files) > 1
 
 
-@pytest.mark.parametrize("project_type", sorted(BACKEND_CSHARP_FILES))
-def test_readme_of_a_csharp_backend_states_its_project_type(
-    tmp_path: Path, render: Render, project_type: str
+@pytest.mark.parametrize(("backend", "project_type"), BACKENDS)
+def test_readme_of_a_backend_states_its_project_type(
+    tmp_path: Path, render: Render, backend: str, project_type: str
 ) -> None:
     render(
         tmp_path / "out",
         typology="backend",
-        technologies={"backend": "csharp"},
+        technologies={"backend": backend},
         project_type=project_type,
     )
 
@@ -239,15 +259,15 @@ def test_readme_of_a_csharp_backend_states_its_project_type(
     assert f"Project type: {project_type}\n" in readme
 
 
-def test_readme_of_a_backend_without_project_types_has_no_project_type_line(
+def test_readme_of_an_application_without_project_types_has_no_project_type_line(
     tmp_path: Path, render: Render
 ) -> None:
-    render(tmp_path / "out", typology="backend", technologies={"backend": "python"})
+    render(tmp_path / "out", typology="frontend", technologies={"frontend": "react-typescript"})
 
-    assert "Project type" not in (tmp_path / "out/apps/backend/README.md").read_text()
+    assert "Project type" not in (tmp_path / "out/apps/frontend/README.md").read_text()
 
 
-def test_omitted_project_type_renders_the_api_files(tmp_path: Path, render: Render) -> None:
+def test_omitted_csharp_project_type_renders_the_api_files(tmp_path: Path, render: Render) -> None:
     render(tmp_path / "out", typology="backend", technologies={"backend": "csharp"})
 
     assert application_files(tmp_path / "out", "backend") == BACKEND_CSHARP_FILES["api"]

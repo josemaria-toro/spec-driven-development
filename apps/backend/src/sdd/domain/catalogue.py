@@ -52,6 +52,7 @@ DEFAULT_PROJECT_TYPE = ProjectType.API
 TECHNOLOGY_PROJECT_TYPES: Mapping[Technology, tuple[ProjectType, ...]] = MappingProxyType(
     {
         Technology.CSHARP: (ProjectType.API, ProjectType.CONSOLE, ProjectType.LIBRARY),
+        Technology.PYTHON: (ProjectType.API, ProjectType.CONSOLE, ProjectType.LIBRARY),
     }
 )
 

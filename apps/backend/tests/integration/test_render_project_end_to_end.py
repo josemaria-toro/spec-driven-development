@@ -50,7 +50,7 @@ def test_fullstack_project_has_the_exact_expected_files(tmp_path: Path, render: 
     render(target)
 
     assert set(read_tree(target)) == (
-        ROOT_FILES | HARNESS_FILES | BACKEND_PYTHON_FILES | FRONTEND_REACT_FILES
+        ROOT_FILES | HARNESS_FILES | BACKEND_PYTHON_FILES["api"] | FRONTEND_REACT_FILES
     )
 
 

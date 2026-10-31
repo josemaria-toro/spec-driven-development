@@ -46,6 +46,32 @@ pyproject.toml
 uv.lock
 ```
 
+### Project types
+
+A Python backend is created with a project type (`project_type` in the project spec; `api` when omitted). The layers, the test layout and the quality gates are the same for every type; the type decides the inbound layer:
+
+| Type | Inbound layer | Use |
+|---|---|---|
+| `api` | `interfaces/` with a FastAPI application (`app.main:app`) served by Uvicorn | HTTP service |
+| `console` | `interfaces/` with a command line entry point (installed command `backend`, `python -m app`) | command line tool |
+| `library` | none | reusable library: typed distribution (`py.typed`), every public member documented, built with `uv build` |
+
+```
+src/<package>/
+  domain/ application/ infrastructure/
+  interfaces/        # api and console only
+  main.py            # api only: the ASGI application
+  __main__.py        # console only: python -m <package>
+tests/
+  unit/ integration/
+```
+
+```bash
+uv run uvicorn app.main:app --reload   # api
+uv run backend <name>                  # console
+uv build                               # library
+```
+
 ## Quality
 
 - Minimum coverage: 80%, gate before each commit and in CI: `uv run pytest tests/unit --cov=src --cov-fail-under=80` (set `fail_under = 80` in `[tool.coverage.report]`).
