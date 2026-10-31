@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: repository-${{ github.ref }}
+  group: repository-template-check-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
