@@ -1,0 +1,84 @@
+name: Repository
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, to catch secrets and specs problems outside of pull requests.
+    - cron: "57 4 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  openspec:
+    name: OpenSpec validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Validate specs and changes
+        run: npx --yes @fission-ai/openspec@1.15.0 validate --all
+
+  commit-types:
+    name: Commit type matches branch prefix
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check commit types
+        env:
+          BRANCH: ${{ github.head_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          prefix="${BRANCH%%/*}"
+          case "$prefix" in
+            feature|bug|hotfix|chore|change) ;;
+            *) echo "Branch '$BRANCH' must start with feature/, bug/, hotfix/, chore/ or change/"; exit 1 ;;
+          esac
+          status=0
+          while IFS= read -r subject; do
+            if ! [[ "$subject" =~ ^${prefix}(\([a-z0-9-]+\))?!?:\  ]]; then
+              echo "Commit '$subject' must have type '$prefix' to match branch '$BRANCH'"
+              status=1
+            fi
+          done < <(git log --no-merges --format=%s "$BASE_SHA..$HEAD_SHA")
+          exit "$status"

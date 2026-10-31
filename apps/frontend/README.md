@@ -34,14 +34,14 @@ pnpm audit                       # high and critical block (dev dependencies inc
 
 The minimum Node version is 20 (`engines`, `.npmrc` `engine-strict=true`, `.nvmrc`), so some tools stay on an older major because their latest one requires Node 22 or newer:
 
-| Tool | Kept at | Why |
-|---|---|---|
-| `vitest`, `@vitest/coverage-v8` | 4.x | 5.x needs Node 22.12+; 3.x has critical advisories in `tinypool` |
-| `jsdom` | 26.x | 30.x needs Node 22.22+ |
-| `@testing-library/jest-dom` | 6.x | 7.x needs Node 22+ |
-| `@axe-core/playwright` | ~4.10 | 4.14 needs Node 22.12+ |
-| `typescript` | ~5.9 | `typescript-eslint` does not support TypeScript 7 yet |
-| `vite` | 7.x | 8.x was not evaluated against Node 20 |
+| Tool                            | Kept at | Why                                                              |
+| ------------------------------- | ------- | ---------------------------------------------------------------- |
+| `vitest`, `@vitest/coverage-v8` | 4.x     | 5.x needs Node 22.12+; 3.x has critical advisories in `tinypool` |
+| `jsdom`                         | 26.x    | 30.x needs Node 22.22+                                           |
+| `@testing-library/jest-dom`     | 6.x     | 7.x needs Node 22+                                               |
+| `@axe-core/playwright`          | ~4.10   | 4.14 needs Node 22.12+                                           |
+| `typescript`                    | ~5.9    | `typescript-eslint` does not support TypeScript 7 yet            |
+| `vite`                          | 7.x     | 8.x was not evaluated against Node 20                            |
 
 Raising the minimum Node version is a stack change (see ADR-0001) and lifts these limits.
 
