@@ -43,8 +43,8 @@
 ## 8. Generated skeletons pass their gates in CI
 
 - [x] 8.1 Parametrize the C# gates of `tests/generated/test_generated_skeletons.py` over the three project types and add `dotnet pack` for `library`, the `App.Console` runs and the entry-project layer check; verify it passes locally
-- [ ] 8.2 Verify the Skeletons job passes on the pull request of this change and that its duration is recorded in the pull request
-- [ ] 8.3 Verify the job fails when the `api` skeleton is broken on purpose (for example a missing documentation comment or a warning in `App.Api`), on a temporary draft pull request that is closed afterwards, and record the result in the pull request
+- [x] 8.2 Verify the Skeletons job passes on the pull request of this change and that its duration is recorded in the pull request
+- [x] 8.3 Verify the job fails when the `api` skeleton is broken on purpose (for example a missing documentation comment or a warning in `App.Api`), on a temporary draft pull request that is closed afterwards, and record the result in the pull request
 
 ## 9. Quality gates and documentation
 
@@ -52,7 +52,7 @@
 - [x] 9.2 Run `uv run ruff format --check . && uv run ruff check . && uv run mypy src && uv run lint-imports` in `apps/backend/` and verify they pass
 - [x] 9.3 Run `uv run pytest tests/unit --cov --cov-fail-under=80` and `uv run pytest tests/integration` and verify coverage stays at or above 80% and all tests pass
 - [x] 9.4 Run `openspec validate add-backend-project-types --strict` and verify it is valid
-- [ ] 9.5 Complete the OWASP checklist (vulnerable and outdated components, software and data integrity, input validation, error handling) in the pull request, including the justification of `Microsoft.AspNetCore.Mvc.Testing`, and verify the vulnerability and secret checks of CI pass without bypassing them
+- [x] 9.5 Complete the OWASP checklist (vulnerable and outdated components, software and data integrity, input validation, error handling) in the pull request, including the justification of `Microsoft.AspNetCore.Mvc.Testing`, and verify the vulnerability and secret checks of CI pass without bypassing them
 
 ## Workflow follow-up
 
