@@ -9,6 +9,8 @@ import pytest
 import yaml
 
 from tests.integration.conftest import (
+    BACKEND_PYTHON_FILES,
+    FRONTEND_REACT_FILES,
     OWNER,
     REPOSITORY_ROOT,
     TEMPLATES_ROOT,
@@ -47,7 +49,7 @@ def test_fullstack_project_has_the_exact_expected_files(tmp_path: Path, render: 
     render(target)
 
     assert set(read_tree(target)) == (
-        ROOT_FILES | HARNESS_FILES | {"apps/backend/README.md", "apps/frontend/README.md"}
+        ROOT_FILES | HARNESS_FILES | BACKEND_PYTHON_FILES | FRONTEND_REACT_FILES
     )
 
 
@@ -68,7 +70,7 @@ def test_frontend_only_project_has_only_the_frontend_application(
     target = tmp_path / "frontend"
     render(target, typology="frontend", technologies={"frontend": "react-typescript"})
 
-    assert set(read_tree(target)) == ROOT_FILES | HARNESS_FILES | {"apps/frontend/README.md"}
+    assert set(read_tree(target)) == ROOT_FILES | HARNESS_FILES | FRONTEND_REACT_FILES
 
 
 def test_rulesets_and_templates_suffixes_are_not_in_the_output(

@@ -16,6 +16,24 @@ apps/          # the applications of this monorepo
 <% endfor %>
 ```
 
+## Applications
+
+Each application starts from a minimal skeleton that already passes its own quality gates. Run the commands from the application directory.
+
+| Application | Gates |
+|---|---|
+| `apps/backend` (Python) | `uv sync --frozen`, `uv run ruff format --check .`, `uv run ruff check .`, `uv run mypy src`, `uv run lint-imports`, `uv run pytest tests/unit --cov`, `uv run pytest tests/integration` |
+| `apps/frontend` (React, TypeScript; Node 20 or newer) | `pnpm install --frozen-lockfile`, `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test:unit --coverage`, `pnpm test:integration`, `pnpm exec playwright install chromium` (once), `pnpm e2e` |
+
+A backend technology without a skeleton yet (C#) only has its `README.md`.
+
+The skeletons use fixed names (distribution `backend` and `frontend`, Python package `app`) and the lockfiles `uv.lock` and `pnpm-lock.yaml` are committed. To refresh them:
+
+- Backend: `uv lock --upgrade`, then `uv sync` and run the gates.
+- Frontend: raise the versions in `package.json` (keep them compatible with Node 20), run `pnpm install --lockfile-only`, then `pnpm install` and run the gates.
+
+Check the locked dependencies for known vulnerabilities with `uv export --frozen --no-hashes --no-emit-project | uvx pip-audit -r /dev/stdin --disable-pip --no-deps` (backend) and `pnpm audit --audit-level high` (frontend).
+
 ## How we work
 
 Everything about how to work in this repository, including the spec-driven flow with OpenSpec, is defined in the harness. Start with [`AGENTS.md`](AGENTS.md).

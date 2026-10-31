@@ -1,0 +1,62 @@
+name: Skeletons
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - "templates/apps/**"
+      - "apps/backend/src/**"
+      - "apps/backend/tests/generated/**"
+      - ".github/workflows/skeletons.yml"
+  schedule:
+    # Weekly, to catch vulnerabilities published after the lockfiles were frozen.
+    - cron: "47 4 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skeletons-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: apps/backend
+
+jobs:
+  generated:
+    name: Generated applications pass their gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: apps/backend/uv.lock
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      # Node 20 is the minimum supported version (see harness/adr/0001).
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: templates/apps/frontend/react-typescript/.nvmrc
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # Renders each typology, installs the locked dependencies of every skeleton, runs its
+      # gates and audits it. A missing tool fails the run when CI=true.
+      - name: Generated skeleton tests
+        run: uv run pytest tests/generated

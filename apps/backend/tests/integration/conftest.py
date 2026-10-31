@@ -15,6 +15,51 @@ TEMPLATES_ROOT = REPOSITORY_ROOT / "templates"
 
 Render = Callable[..., RenderResult]
 
+BACKEND_PYTHON_FILES = {
+    "apps/backend/.gitignore",
+    "apps/backend/README.md",
+    "apps/backend/pyproject.toml",
+    "apps/backend/src/app/__init__.py",
+    "apps/backend/src/app/application/__init__.py",
+    "apps/backend/src/app/application/greet.py",
+    "apps/backend/src/app/domain/__init__.py",
+    "apps/backend/src/app/domain/greeting.py",
+    "apps/backend/src/app/infrastructure/__init__.py",
+    "apps/backend/tests/__init__.py",
+    "apps/backend/tests/integration/__init__.py",
+    "apps/backend/tests/integration/test_greet.py",
+    "apps/backend/tests/unit/__init__.py",
+    "apps/backend/tests/unit/test_greet.py",
+    "apps/backend/tests/unit/test_greeting.py",
+    "apps/backend/uv.lock",
+}
+
+FRONTEND_REACT_FILES = {
+    "apps/frontend/.gitignore",
+    "apps/frontend/.npmrc",
+    "apps/frontend/.nvmrc",
+    "apps/frontend/.prettierignore",
+    "apps/frontend/.prettierrc.json",
+    "apps/frontend/README.md",
+    "apps/frontend/eslint.config.js",
+    "apps/frontend/index.html",
+    "apps/frontend/package.json",
+    "apps/frontend/playwright.config.ts",
+    "apps/frontend/pnpm-lock.yaml",
+    "apps/frontend/src/domain/page-content.ts",
+    "apps/frontend/src/interfaces/App.test.tsx",
+    "apps/frontend/src/interfaces/App.tsx",
+    "apps/frontend/src/interfaces/app.css",
+    "apps/frontend/src/main.tsx",
+    "apps/frontend/src/vite-env.d.ts",
+    "apps/frontend/tests/e2e/home.spec.ts",
+    "apps/frontend/tests/integration/mount.test.tsx",
+    "apps/frontend/tests/setup.ts",
+    "apps/frontend/tsconfig.json",
+    "apps/frontend/vite.config.ts",
+    "apps/frontend/vitest.integration.config.ts",
+}
+
 
 def build_use_case(templates: Path = TEMPLATES_ROOT) -> RenderProject:
     return RenderProject(
